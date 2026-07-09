@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="page_title">Media Club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#B5C0A0;--bg-alt:#AAB89A;--bg-dark:#2D3329;--text:#3A4038;--text-light:#6B7268;--text-muted:#8B9080;--black:#000000;--white:#F5F2E8;--accent:#E8E5DB;--border:#8B9080;--font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;background:var(--bg)}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--text-muted)}
+.pixel-grid{position:fixed;inset:0;pointer-events:none;z-index:9999;background-image:linear-gradient(rgba(58,64,56,.04)1px,transparent 1px),linear-gradient(90deg,rgba(58,64,56,.04)1px,transparent 1px);background-size:24px 24px}
+
+/* Nav */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:28px 48px;mix-blend-mode:difference;color:var(--white);font-size:13px;font-weight:400;letter-spacing:.12em;text-transform:uppercase;transition:opacity .4s,background .3s,padding .3s,color .3s}
+.nav.scrolled{background:var(--bg);color:var(--text)!important;padding-top:20px;padding-bottom:20px;box-shadow:0 1px 0 var(--border);mix-blend-mode:normal!important}
+.nav-logo{font-size:14px;font-weight:700;letter-spacing:.2em;cursor:pointer}
+.nav-links{display:flex;gap:36px;list-style:none;align-items:center}
+.nav-links a{color:inherit;text-decoration:none;position:relative;cursor:pointer}
+.nav-links a::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1px;background:currentColor;transition:width .3s}
+.nav-links a:hover::after{width:100%}
+.nav-btn{padding:8px 20px;border:1px solid currentColor;background:transparent;color:inherit;font-family:var(--font);font-size:12px;font-weight:400;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:background .3s,color .3s;text-decoration:none;border-radius:0}
+.nav-btn:hover{background:currentColor;color:var(--bg-dark)}
+.nav.scrolled .nav-btn:hover{background:var(--text);color:var(--bg)}
+.nav-user{display:flex;align-items:center;gap:10px;font-size:12px;cursor:pointer;position:relative}
+.nav-user-avatar{width:28px;height:28px;border-radius:50%;background:var(--text-muted);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--bg)}
+.lang-btn{background:none;border:1px solid currentColor;color:inherit;font-family:var(--font);font-size:11px;font-weight:400;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:4px 10px;transition:background .2s,color .2s;border-radius:0}
+.lang-btn:hover{background:currentColor;color:var(--bg-dark)}
+.nav.scrolled .lang-btn:hover{background:var(--text);color:var(--bg)}
+
+/* Dropdown */
+.dropdown{position:absolute;top:calc(100%+8px);right:0;background:var(--bg);border:1px solid var(--border);min-width:180px;z-index:200;display:none;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.dropdown.open{display:block}
+.dropdown-item{padding:12px 20px;font-size:12px;font-weight:400;letter-spacing:.05em;color:var(--text);cursor:pointer;text-transform:none;transition:background .2s;border:none;background:none;width:100%;text-align:left;font-family:var(--font)}
+.dropdown-item:hover{background:rgba(0,0,0,.04)}
+.dropdown-divider{height:1px;background:var(--border);margin:4px 0}
+
+/* Hero */
+.hero{position:relative;width:100%;height:100vh;overflow:hidden;background:#000}
+.hero-scene{position:absolute;inset:0}
+.hero-scene>div{width:100%!important;height:100%!important}
+.hero-overlay{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;justify-content:center;align-items:center;mix-blend-mode:difference;pointer-events:none}
+.hero-title{font-size:clamp(80px,14vw,220px);font-weight:900;line-height:.85;letter-spacing:-.04em;text-transform:uppercase;color:var(--white);text-align:center;position:relative}
+.hero-title .line{display:block;position:relative}
+.hero-title .line-1{clip-path:polygon(0 0,100% 0,92% 100%,0 100%);padding-right:4vw}
+.hero-title .line-2{clip-path:polygon(8% 0,100% 0,100% 100%,0 100%);padding-left:4vw;margin-top:-.08em}
+.hero-sub{position:absolute;bottom:48px;left:48px;z-index:10;font-size:12px;font-weight:300;letter-spacing:.15em;text-transform:uppercase;color:var(--white);mix-blend-mode:difference;pointer-events:none}
+.hero-corner{position:absolute;bottom:48px;right:48px;z-index:10;font-size:11px;font-weight:300;letter-spacing:.1em;text-transform:uppercase;color:var(--white);mix-blend-mode:difference;text-align:right;pointer-events:none}
+.scroll-indicator{position:absolute;bottom:48px;left:50%;transform:translateX(-50%);z-index:10;width:1px;height:60px;background:rgba(255,255,255,.3);mix-blend-mode:difference;pointer-events:none}
+.scroll-indicator::after{content:'';position:absolute;top:0;left:-1px;width:3px;height:20px;background:var(--white);animation:scrollPulse 2s ease-in-out infinite}
+@keyframes scrollPulse{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(30px);opacity:1}}
+
+/* Section shared */
+.section{position:relative;padding:140px 48px;background:var(--bg);overflow:hidden}
+.section-dark{background:var(--bg-dark);color:var(--accent)}
+.section-label{font-size:11px;font-weight:400;letter-spacing:.2em;text-transform:uppercase;color:var(--text-muted);margin-bottom:20px}
+.section-title{font-size:clamp(48px,8vw,120px);font-weight:900;line-height:.9;letter-spacing:-.03em;text-transform:uppercase;color:var(--text);margin-bottom:60px;position:relative}
+.section-title-cut{display:inline-block;clip-path:polygon(0 0,100% 0,90% 100%,0 100%)}
+.section-dark .section-title{color:var(--accent)}
+.section-dark .section-label{color:rgba(232,229,219,.4)}
+
+/* About with UnicornStudio scene */
+.about-wrap{position:relative;overflow:hidden}
+.about-bg-scene{position:absolute;inset:0;z-index:0;pointer-events:none}
+.about-bg-scene>div{width:100%!important;height:100%!important}
+.about-bg-scene::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(181,192,160,.92) 0%,rgba(181,192,160,.7) 50%,rgba(181,192,160,.88) 100%);pointer-events:none;z-index:1}
+.about-grid{display:grid;grid-template-columns:1fr;gap:0;max-width:960px;margin:0 auto;position:relative;z-index:2}
+
+
+
+
+.about-content{position:relative;background:rgba(245,242,232,.45);backdrop-filter:blur(3px);padding:48px 56px;width:100%}
+.about-content p{font-size:15px;font-weight:300;line-height:1.9;color:var(--text);margin-bottom:20px}
+.about-content h3{font-size:18px;font-weight:700;letter-spacing:.02em;color:var(--text);margin:28px 0 12px;text-transform:uppercase}
+.about-content h3:first-of-type{margin-top:0}
+.about-content ul{list-style:none;padding:0;margin:0 0 20px}
+.about-content ul li{font-size:14px;font-weight:300;line-height:1.8;color:var(--text);padding-left:20px;position:relative}
+.about-content ul li::before{content:'◆';position:absolute;left:0;font-size:8px;top:3px;color:var(--text-muted)}
+
+/* Philosophy */
+.philosophy{padding:180px 48px;position:relative}
+.philosophy-text{font-size:clamp(28px,4.5vw,64px);font-weight:200;line-height:1.3;letter-spacing:-.02em;max-width:1100px;margin:0 auto;position:relative;color:var(--accent)}
+.philosophy-text em{font-style:normal;font-weight:900;color:var(--white)}
+.philosophy-block{position:absolute;width:120px;height:120px;background:rgba(0,0,0,.15);pointer-events:none}
+.philosophy-block-1{bottom:60px;right:60px}
+.philosophy-block-2{top:60px;left:60px;width:48px;height:48px}
+
+/* Cards & Schedule */
+.info-cards{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:1280px;margin:0 auto 60px}
+.info-card{border:1px solid var(--border);padding:36px 32px;background:transparent;position:relative}
+.info-card::before{content:'';position:absolute;top:-1px;right:-1px;width:32px;height:32px;background:var(--black);opacity:.05;pointer-events:none}
+.info-card .num{font-size:36px;font-weight:200;color:var(--text-light);margin-bottom:8px}
+.info-card h4{font-size:16px;font-weight:700;letter-spacing:-.01em;text-transform:uppercase;color:var(--text);margin-bottom:10px}
+.info-card p{font-size:14px;font-weight:300;line-height:1.7;color:var(--text-light)}
+.schedule-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;max-width:1280px;margin:0 auto}
+.sched-item{border-left:2px solid var(--border);padding:16px 0 16px 24px;position:relative}
+.sched-item::before{content:'';position:absolute;left:-5px;top:22px;width:8px;height:8px;background:var(--border)}
+.sched-item .period{font-size:11px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px}
+.sched-item .title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:4px}
+.sched-item .desc{font-size:13px;font-weight:300;color:var(--text-light)}
+
+/* Gallery */
+.gallery-wrap{max-width:1280px;margin:0 auto}
+.gallery-tabs{display:flex;gap:24px;margin-bottom:40px;border-bottom:1px solid var(--border);padding-bottom:16px}
+.gallery-tab{font-size:12px;font-weight:400;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;transition:color .3s;border:none;background:none;font-family:var(--font);padding:4px 0}
+.gallery-tab.active{color:var(--text);font-weight:700}
+.gallery-tab:hover{color:var(--text)}
+.gallery-actions{display:flex;gap:12px;margin-left:auto}
+.submit-btn{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text);cursor:pointer;background:none;border:1px solid var(--border);padding:4px 14px;font-family:var(--font);transition:border-color .3s}
+.submit-btn:hover{border-color:var(--text)}
+.media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.media-card{position:relative;background:var(--black);aspect-ratio:16/10;overflow:hidden;cursor:pointer;transition:opacity .3s}
+.media-card video,.media-card img{width:100%;height:100%;object-fit:cover}
+.media-card .play-btn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.media-card .play-btn span{width:48px;height:48px;border:1px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--white);transition:background .3s}
+.media-card:hover .play-btn span{background:rgba(255,255,255,.1)}
+.media-card .meta{position:absolute;bottom:0;left:0;right:0;padding:40px 16px 12px;background:linear-gradient(transparent,rgba(0,0,0,.7))}
+.media-card .meta .m-title{font-size:13px;font-weight:600;color:var(--white);margin-bottom:2px}
+.media-card .meta .m-author{font-size:11px;font-weight:300;color:rgba(255,255,255,.5)}
+.media-card .status-badge{position:absolute;top:10px;right:10px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;z-index:2}
+.status-badge.approved{color:rgba(144,200,144,.8);background:rgba(0,0,0,.4)}
+.status-badge.pending{color:rgba(240,200,100,.8);background:rgba(0,0,0,.4)}
+.media-card .del-btn{position:absolute;top:10px;left:10px;z-index:3;width:24px;height:24px;border:none;background:rgba(0,0,0,.5);color:rgba(255,100,100,.8);font-size:14px;cursor:pointer;display:none;align-items:center;justify-content:center;font-family:var(--font);line-height:1}
+.media-card:hover .del-btn{display:flex}
+
+/* Join */
+.join-wrap{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:end}
+.join-title-large{font-size:clamp(80px,12vw,200px);font-weight:900;line-height:.8;letter-spacing:-.04em;text-transform:uppercase;color:var(--accent);position:relative}
+.join-title-large .cut-clip{display:inline-block;clip-path:polygon(4% 0,100% 0,100% 100%,0 100%)}
+.join-text{font-size:16px;font-weight:300;line-height:1.8;color:rgba(232,229,219,.7);margin-bottom:32px}
+.join-btn{display:inline-flex;align-items:center;gap:12px;padding:16px 40px;border:1px solid var(--accent);background:transparent;color:var(--accent);font-family:var(--font);font-size:12px;font-weight:400;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:background .3s,color .3s;text-decoration:none}
+.join-btn:hover{background:var(--accent);color:var(--bg-dark)}
+.join-btn-arrow{font-size:16px;line-height:1}
+
+/* Footer */
+.footer{padding:48px;border-top:1px solid rgba(232,229,219,.1);background:var(--bg-dark);color:rgba(232,229,219,.4);font-size:12px;font-weight:300;letter-spacing:.05em}
+.footer-inner{max-width:1280px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
+.footer-links{display:flex;gap:24px;list-style:none}
+.footer-links a{color:inherit;text-decoration:none;transition:color .3s;cursor:pointer}
+.footer-links a:hover{color:var(--accent)}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg);width:460px;max-width:90vw;padding:48px 40px;position:relative;max-height:90vh;overflow-y:auto}
+.modal-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border:none;background:none;font-size:18px;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;font-family:var(--font)}
+.modal h2{font-size:28px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;color:var(--text);margin-bottom:8px}
+.modal .sub{font-size:12px;font-weight:300;color:var(--text-muted);letter-spacing:.05em;margin-bottom:32px}
+.modal-field{margin-bottom:20px}
+.modal-field label{display:block;font-size:10px;font-weight:400;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
+.modal-field input,.modal-field textarea,.modal-field select{width:100%;padding:12px 14px;border:1px solid var(--border);background:transparent;font-family:var(--font);font-size:14px;color:var(--text);outline:none;transition:border-color .3s;border-radius:0}
+.modal-field input:focus,.modal-field textarea:focus{border-color:var(--text)}
+.modal-field .hint{font-size:11px;color:var(--text-muted);margin-top:4px;font-weight:300}
+.modal-submit{width:100%;padding:14px;border:1px solid var(--text);background:transparent;color:var(--text);font-family:var(--font);font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:background .3s,color .3s}
+.modal-submit:hover{background:var(--text);color:var(--bg)}
+.modal-switch{text-align:center;margin-top:20px;font-size:12px;color:var(--text-light)}
+.modal-switch a{color:var(--text);text-decoration:underline;cursor:pointer;font-weight:600}
+.modal-error{font-size:12px;color:#b33;margin-bottom:16px;display:none;background:rgba(187,51,51,.08);padding:10px 14px}
+
+/* Admin */
+.admin-panel{display:none}
+.admin-panel.open{display:block}
+.admin-header{max-width:1280px;margin:0 auto 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+.admin-header h3{font-size:24px;font-weight:900;text-transform:uppercase;color:var(--accent);letter-spacing:-.02em}
+.admin-tabs{display:flex;gap:16px}
+.admin-tab{font-size:11px;font-weight:400;letter-spacing:.12em;text-transform:uppercase;color:rgba(232,229,219,.4);cursor:pointer;background:none;border:none;font-family:var(--font);padding:6px 0;border-bottom:1px solid transparent;transition:color .3s,border-color .3s}
+.admin-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.admin-tab:hover{color:var(--accent)}
+.admin-section{display:none;max-width:1280px;margin:0 auto}
+.admin-section.open{display:block}
+.admin-upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+.admin-card{background:rgba(255,255,255,.04);border:1px solid rgba(232,229,219,.08);padding:32px}
+.admin-card h4{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);margin-bottom:20px}
+.admin-card .file-input-wrap{border:1px dashed rgba(232,229,219,.2);padding:24px;text-align:center;margin-bottom:16px;cursor:pointer;transition:border-color .3s}
+.admin-card .file-input-wrap:hover{border-color:var(--accent)}
+.admin-card .file-input-wrap .icon{font-size:24px;margin-bottom:8px;color:rgba(232,229,219,.3)}
+.admin-card .file-input-wrap p{font-size:12px;color:rgba(232,229,219,.4);font-weight:300}
+.admin-table-wrap{overflow-x:auto}
+.admin-table{width:100%;border-collapse:collapse}
+.admin-table th{text-align:left;font-size:10px;font-weight:400;letter-spacing:.15em;text-transform:uppercase;color:rgba(232,229,219,.3);padding:12px;border-bottom:1px solid rgba(232,229,219,.08);white-space:nowrap}
+.admin-table td{font-size:13px;font-weight:300;color:rgba(232,229,219,.7);padding:12px;border-bottom:1px solid rgba(232,229,219,.04)}
+.admin-table td a{color:var(--accent);text-decoration:underline;cursor:pointer;font-size:11px}
+.admin-table .role-admin{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(200,180,100,.6)}
+.admin-table .role-member{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(232,229,219,.3)}
+.admin-actions{display:flex;gap:8px}
+.admin-actions button{font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border:1px solid rgba(232,229,219,.15);background:transparent;color:rgba(232,229,219,.6);cursor:pointer;font-family:var(--font);transition:color .3s,border-color .3s}
+.admin-actions button:hover{color:var(--accent);border-color:var(--accent)}
+.admin-actions button.danger:hover{color:#ff6b6b;border-color:rgba(255,100,100,.3)}
+
+/* Toast */
+.success-toast{position:fixed;bottom:48px;left:50%;transform:translateX(-50%);z-index:300;background:var(--bg-dark);color:var(--accent);padding:16px 32px;font-size:13px;font-weight:300;letter-spacing:.05em;border:1px solid var(--border);display:none;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* Empty state */
+.empty-state{text-align:center;padding:80px 20px;color:var(--text-light);font-size:14px;font-weight:300;grid-column:1/-1}
+.empty-state .icon{font-size:32px;margin-bottom:12px;opacity:.3}
+
+.input-code{font-family:monospace;letter-spacing:.3em;text-align:center}
+.badge-count{display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-muted);border:1px solid var(--border);width:24px;height:24px}
+
+@media(max-width:900px){
+  .nav{padding:20px 24px}.nav-links{gap:12px}.nav-links li.nav-hide{display:none}
+  .section{padding:80px 24px}.join-wrap{grid-template-columns:1fr;gap:40px}
+  .media-grid,.admin-upload-grid,.info-cards,.schedule-grid{grid-template-columns:1fr}
+  .hero-title{font-size:clamp(48px,18vw,100px)}
+  .philosophy{padding:100px 24px}.footer-inner{flex-direction:column;gap:16px;text-align:center}
+  .hero-sub{left:24px;bottom:24px}.hero-corner{right:24px;bottom:24px;display:none}
+  .admin-header{flex-direction:column;align-items:flex-start}
+  .about-content{padding:24px}
+}
+@media(max-width:600px){
+  .hero-title{font-size:clamp(40px,15vw,72px)}.section-title{font-size:36px}
+  .modal{padding:32px 24px}
+}
+</style>
+</head>
+<body>
+<div class="pixel-grid"></div>
+
+<!-- Nav -->
+<nav class="nav" id="nav">
+  <span class="nav-logo" onclick="scrollToId('hero')">◆ Media Club</span>
+  <ul class="nav-links">
+    <li><a onclick="scrollToId('intro')"><span data-i18n="nav_about">About</span></a></li>
+    <li class="nav-hide"><a onclick="scrollToId('schedule')"><span data-i18n="nav_schedule">Schedule</span></a></li>
+    <li class="nav-hide"><a onclick="scrollToId('gallery')"><span data-i18n="nav_gallery">Gallery</span></a></li>
+    <li><a onclick="scrollToId('join')"><span data-i18n="nav_join">Join</span></a></li>
+    <li><button class="lang-btn" id="lang-btn" onclick="toggleLang()">中</button></li>
+    <li id="nav-auth"></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section class="hero" id="hero">
+  <div class="hero-scene" id="hero-scene">
+    <div style="width:100%;height:100%" data-us-project="w0B6uPgEbSsnIUAgNwwh"></div>
+  </div>
+  <div class="hero-overlay"><h1 class="hero-title"><span class="line line-1">MEDIA</span><span class="line line-2">CLUB</span></h1></div>
+  <div class="hero-sub">Est. 2025</div>
+  <div class="hero-corner"><span data-i18n="hero_loc">Beijing / College of Arts</span></div>
+  <div class="scroll-indicator"></div>
+</section>
+
+<!-- About with UnicornStudio scene -->
+<section class="section about-wrap" id="intro">
+  <div class="about-bg-scene">
+    <div style="width:100%;height:100%" data-us-project="5WGvMr3mUwrelEAVCVEr"></div>
+  </div>
+  <div class="section-label" style="position:relative;z-index:2">/ 001 <span data-i18n="about_label">About</span></div>
+  <div class="about-grid">
+
+    <div class="about-content">
+      <h2 class="section-title" style="margin-bottom:30px"><span class="section-title-cut" data-i18n="about_title">About Us</span></h2>
+      <h3 data-i18n="about_mission_h">Our Mission</h3>
+      <p data-i18n="about_mission_p">Media Club brings together student creators to collect, curate, and showcase original short films and creative projects from across the campus. We cover graphic design, editorial media, and audio-visual production, building a student-driven portfolio platform.</p>
+      <h3 data-i18n="about_activities_h">Activities</h3>
+      <ul id="about-activities-list">
+        <li><strong data-i18n="act_archive_l">Archive:</strong> <span data-i18n="act_archive_d">Collect student short films and projects, archive with permission, and exhibit on our online platform.</span></li>
+        <li><strong data-i18n="act_design_l">Design:</strong> <span data-i18n="act_design_d">Campus posters,文创 design, and commissioned commercial design work — all proceeds fund club operations and public-interest projects.</span></li>
+        <li><strong data-i18n="act_doc_l">Documentary &amp; Interviews:</strong> <span data-i18n="act_doc_d">One documentary per semester; monthly interview series featuring campus and city figures.</span></li>
+      </ul>
+      <h3 data-i18n="about_structure_h">Structure</h3>
+      <p data-i18n="about_structure_p">Graphic Design · Editorial Team · Audio-Visual Production · Operations</p>
+    </div>
+  </div>
+</section>
+
+<!-- Philosophy -->
+<section class="section-dark philosophy">
+  <div class="philosophy-block philosophy-block-1"></div>
+  <div class="philosophy-block philosophy-block-2"></div>
+  <div class="philosophy-text">"We see the <em>image</em> not as a window to the world,<br>but as a <em>surface</em> to be cut, layered, and<br>reassembled into <em>new realities</em>."</div>
+</section>
+
+<!-- Schedule -->
+<section class="section" id="schedule">
+  <div class="section-label">/ 002 <span data-i18n="schedule_label">Schedule</span></div>
+  <h2 class="section-title"><span class="section-title-cut" data-i18n="schedule_title">Events &amp; Plans</span></h2>
+  <div class="info-cards" id="info-cards">
+    <!-- Rendered by JS for i18n -->
+  </div>
+  <h2 class="section-title" style="font-size:clamp(24px,4vw,48px);margin-bottom:32px"><span class="section-title-cut" data-i18n="schedule_subtitle">Timeline</span></h2>
+  <div class="schedule-grid" id="schedule-grid">
+    <!-- Rendered by JS for i18n -->
+  </div>
+</section>
+
+<!-- Gallery -->
+<section class="section section-dark" id="gallery">
+  <div class="section-label">/ 003 <span data-i18n="gallery_label">Gallery</span></div>
+  <h2 class="section-title"><span class="section-title-cut" data-i18n="gallery_title">Public Gallery</span></h2>
+  <div class="gallery-wrap">
+    <div class="gallery-tabs">
+      <button class="gallery-tab active" data-tab="videos" onclick="switchGallery('videos')">Videos</button>
+      <button class="gallery-tab" data-tab="designs" onclick="switchGallery('designs')">Designs</button>
+      <div class="gallery-actions">
+        <span id="gallery-count" class="badge-count">0</span>
+        <button class="submit-btn" id="gallery-submit-btn" onclick="openSubmitModal()" style="display:none"><span data-i18n="gallery_submit">+ Submit</span></button>
+      </div>
+    </div>
+    <div class="media-grid" id="media-grid"></div>
+  </div>
+</section>
+
+<!-- Admin -->
+<section class="section section-dark" id="admin-section" style="display:none">
+  <div class="section-label">/ Admin</div>
+  <div class="admin-panel open">
+    <div class="admin-header">
+      <h3 data-i18n="admin_title">Admin Dashboard</h3>
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-atab="publish" onclick="switchAdminTab('publish')"><span data-i18n="admin_tab_publish">Publish</span></button>
+        <button class="admin-tab" data-atab="pending" onclick="switchAdminTab('pending')"><span data-i18n="admin_tab_pending">Pending</span> <span id="pending-count" style="color:rgba(240,200,100,.8)"></span></button>
+        <button class="admin-tab" data-atab="manage" onclick="switchAdminTab('manage')"><span data-i18n="admin_tab_members">Members</span></button>
+      </div>
+    </div>
+
+    <div class="admin-section open" id="admin-publish">
+      <div class="admin-upload-grid">
+        <div class="admin-card">
+          <h4 data-i18n="admin_pub_video">Publish Video</h4>
+          <div class="file-input-wrap">
+            <div class="icon">&#9654;</div>
+            <input type="text" id="video-url-input" placeholder="YouTube / Bilibili URL..." style="width:100%;padding:10px;border:1px solid rgba(232,229,219,.15);background:transparent;color:var(--accent);font-family:var(--font);font-size:13px;outline:none;margin-bottom:8px">
+            <input type="text" id="video-title-input" placeholder="Video title..." style="width:100%;padding:10px;border:1px solid rgba(232,229,219,.15);background:transparent;color:var(--accent);font-family:var(--font);font-size:13px;outline:none">
+          </div>
+          <button class="join-btn" style="width:100%;justify-content:center" onclick="adminPublishVideo()"><span data-i18n="admin_publish_btn">Publish</span></button>
+        </div>
+        <div class="admin-card">
+          <h4 data-i18n="admin_pub_design">Publish Design</h4>
+          <div class="file-input-wrap" onclick="document.getElementById('design-file-input').click()">
+            <div class="icon">&#9670;</div>
+            <input type="file" id="design-file-input" accept="image/*" style="display:none" onchange="handleDesignSelect(event)">
+            <p data-i18n="admin_select_img">Click to select image</p>
+          </div>
+          <input type="text" id="design-title-input" placeholder="Design title..." style="width:100%;padding:10px;border:1px solid rgba(232,229,219,.15);background:transparent;color:var(--accent);font-family:var(--font);font-size:13px;outline:none;margin-bottom:16px">
+          <button class="join-btn" style="width:100%;justify-content:center" onclick="adminPublishDesign()"><span data-i18n="admin_publish_btn">Publish</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-section" id="admin-pending">
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th data-i18n="admin_th_type">Type</th><th data-i18n="admin_th_title">Title</th><th data-i18n="admin_th_author">Author</th><th data-i18n="admin_th_date">Submitted</th><th data-i18n="admin_th_actions">Actions</th></tr></thead>
+          <tbody id="pending-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="admin-section" id="admin-manage">
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th data-i18n="admin_th_user">Username</th><th data-i18n="admin_th_role">Role</th><th data-i18n="admin_th_joined">Joined</th><th data-i18n="admin_th_actions">Actions</th></tr></thead>
+          <tbody id="users-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Join -->
+<section class="section" id="join">
+  <div class="section-label">/ 004 <span data-i18n="join_label">Join</span></div>
+  <div class="join-wrap">
+    <div class="join-title-large"><span class="cut-clip">JOIN</span><br><span class="cut-clip" style="clip-path:polygon(0 0,100% 0,96% 100%,0 100%)">US</span></div>
+    <div>
+      <p class="join-text" data-i18n="join_text">Media Club is open to all — photographers, visual artists, programmers, writers. Register with the club invitation code to join our creative collective.</p>
+      <a class="join-btn" onclick="openModal('register')"><span data-i18n="join_btn">Register Now</span> <span class="join-btn-arrow">→</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-inner">
+    <span>&copy; 2026 Media Club</span>
+    <ul class="footer-links">
+      <li><a>Instagram</a></li>
+      <li><a>WeChat</a></li>
+      <li><a>GitHub</a></li>
+    </ul>
+  </div>
+</footer>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="success-toast" id="toast"></div>
+
+<script>
+// ======================== I18N ========================
+var LANG_DATA = {
+  en: {
+    page_title: 'Media Club',
+    nav_about: 'About', nav_schedule: 'Schedule', nav_gallery: 'Gallery', nav_join: 'Join',
+    hero_loc: 'Beijing / College of Arts',
+    about_label: 'About', about_title: 'About Us',
+    about_mission_h: 'Our Mission',
+    about_mission_p: 'Media Club brings together student creators to collect, curate, and showcase original short films and creative projects from across the campus. We cover graphic design, editorial media, and audio-visual production, building a student-driven portfolio platform.',
+    about_activities_h: 'Activities',
+    act_archive_l: 'Archive:', act_archive_d: 'Collect student short films and projects, archive with permission, and exhibit on our online platform.',
+    act_design_l: 'Design:', act_design_d: 'Campus posters, cultural merchandise, and commissioned commercial design work. All proceeds fund club operations and public-interest projects.',
+    act_doc_l: 'Documentary & Interviews:', act_doc_d: 'One documentary per semester; monthly interview series featuring campus and city figures.',
+    about_structure_h: 'Structure',
+    about_structure_p: 'Graphic Design \u00b7 Editorial Team \u00b7 Audio-Visual Production \u00b7 Operations',
+    schedule_label: 'Schedule', schedule_title: 'Events & Plans', schedule_subtitle: 'Timeline',
+    sched_1_title: 'Archive', sched_1_desc: 'Bi-weekly meetings to refine members\u2019 works and prepare for publication.',
+    sched_2_title: 'Interviews', sched_2_desc: 'Monthly campus and city figure interview series.',
+    sched_3_title: 'Documentary', sched_3_desc: 'One complete documentary per semester.',
+    sched_4_title: 'Design', sched_4_desc: 'Campus posters, cultural products, external commissions.',
+    sched_5_title: 'Collection', sched_5_desc: 'Ongoing collection of student short films and projects.',
+    sched_6_title: 'Exhibition', sched_6_desc: 'Online platform for unified publication and display.',
+    card_1_title: 'Archive Plan', card_1_desc: 'Bi-weekly club meetings to refine members\u2019 creative works, accumulate publishable pieces, and establish submission guidelines for collecting short films and projects from all students.',
+    card_2_title: 'Interview Column', card_2_desc: 'Launch a monthly interview column featuring campus and city figures, producing companion photo essays and short videos.',
+    card_3_title: 'Design Commissions', card_3_desc: 'Build a portfolio of design samples and gradually take on external commercial orders. All income funds club operations and public-interest projects.',
+    card_4_title: 'Documentary', card_4_desc: 'One documentary per semester: select a topic, prepare, and deliver a complete film by semester\u2019s end.',
+    gallery_label: 'Gallery', gallery_title: 'Public Gallery', gallery_submit: '+ Submit',
+    join_label: 'Join', join_text: 'Media Club is open to all \u2014 photographers, visual artists, programmers, writers. Register with the club invitation code to join our creative collective.', join_btn: 'Register Now',
+    admin_title: 'Admin Dashboard', admin_tab_publish: 'Publish', admin_tab_pending: 'Pending', admin_tab_members: 'Members',
+    admin_pub_video: 'Publish Video', admin_pub_design: 'Publish Design', admin_publish_btn: 'Publish', admin_select_img: 'Click to select image',
+    admin_th_type: 'Type', admin_th_title: 'Title', admin_th_author: 'Author', admin_th_date: 'Submitted', admin_th_actions: 'Actions', admin_th_user: 'Username', admin_th_role: 'Role', admin_th_joined: 'Joined',
+    modal_login_title: 'Login', modal_login_sub: 'Sign in to your account', modal_login_btn: 'Sign In', modal_login_switch: 'No account?',
+    modal_register_title: 'Register', modal_register_sub: 'Join with your invitation code', modal_register_btn: 'Create Account', modal_register_switch: 'Already registered?',
+    modal_profile_title: 'Profile', modal_profile_save: 'Save Changes',
+    modal_submit_title: 'Submit Work', modal_submit_sub: 'Your submission will be reviewed by admin', modal_submit_btn: 'Submit for Review', modal_submit_note: 'After approval, it will appear in the gallery.',
+    type_video: 'Video', type_design: 'Design',
+    label_username: 'Username', label_password: 'Password', label_code: 'Club Code', label_display: 'Display Name', label_email: 'Email (optional)', label_title: 'Title', label_url: 'URL', label_type: 'Type', label_desc: 'Description (optional)', label_newpass: 'New Password (leave blank to keep)',
+    placeholder_code: 'Invitation code', placeholder_user: 'Choose a unique username', placeholder_name: 'How others see you', placeholder_email: 'your@email.com', placeholder_pass: 'At least 4 characters', placeholder_title: 'Name your work', placeholder_url: 'YouTube / Bilibili link', placeholder_img: 'Image File',
+    gallery_empty: 'No {tab} published yet.',
+    pending_empty: 'No pending submissions.',
+    login_err_empty: 'Please fill in all fields.', login_err_invalid: 'Invalid username or password.',
+    register_err_empty: 'Please fill in all fields.', register_err_code: 'Invalid club invitation code.', register_err_user: 'Username must be at least 3 characters.', register_err_pass: 'Password must be at least 4 characters.', register_err_taken: 'Username already taken.',
+    submit_err_title: 'Please enter a title.', submit_err_url: 'Please enter a video URL.', submit_err_file: 'Please select an image.',
+    toast_welcome: 'Welcome back, {name}!', toast_register: 'Welcome to Media Club, {name}!', toast_logout: 'Logged out.', toast_updated: 'Profile updated!', toast_deleted: 'Deleted.', toast_approved: 'Approved!', toast_rejected: 'Rejected.', toast_published: 'Published: {title}', toast_selected: 'Selected: {name}', toast_submitted: 'Submitted for review!', toast_nouser: 'User not found.',
+    confirm_delete: 'Delete this item?', confirm_reject: 'Reject this submission?', confirm_deluser: 'Delete user \"{name}\"? This cannot be undone.',
+    approve_btn: 'Approve', reject_btn: 'Reject', delete_btn: 'Delete',
+    logout: 'Logout', profile: 'Profile', submit_work: 'Submit Work',
+  },
+  zh: {
+    page_title: 'Media Club — 媒介社',
+    nav_about: '社团介绍', nav_schedule: '日程', nav_gallery: '作品', nav_join: '加入',
+    hero_loc: '北京 / 艺术学院',
+    about_label: '社团介绍', about_title: '媒介社',
+    about_mission_h: '社团宗旨',
+    about_mission_p: '汇集校内喜爱创作的同学，收集全校学生原创短片和各类小型创作项目，征得作者许可后由社团平台统一整理发布，搭建本校原创作品展示库。社团涵盖平面、采编、影音创作；作品产出成熟后有望开启平面设计商单服务，盈余经费用于公益设计。',
+    about_activities_h: '主要活动',
+    act_archive_l: '作品归集：', act_archive_d: '面向国际部征集短片及各类小型创作项目，获得授权后归档，在社团线上平台统一展出。',
+    act_design_l: '平面设计：', act_design_d: '日常完成校园海报、文创设计，承接校外正规设计订单，收入全部充当社团经费与公益开支。',
+    act_doc_l: '纪实与采访：', act_doc_d: '每学期完成一部纪实短片；每月轮换开展校园、城市人物专访，产出配套图文与短片成品。',
+    about_structure_h: '社团架构',
+    about_structure_p: '平面设计组 · 采编组 · 影音创作组 · 运营管理组',
+    schedule_label: '日程', schedule_title: '活动与规划', schedule_subtitle: '日程安排',
+    sched_1_title: '社团例会', sched_1_desc: '打磨社员创作，积累入库作品',
+    sched_2_title: '人物专访', sched_2_desc: '校园/城市人物深度访谈',
+    sched_3_title: '纪实短片', sched_3_desc: '完成一部完整纪实短片作品',
+    sched_4_title: '平面设计', sched_4_desc: '校园海报、文创、外部商单对接',
+    sched_5_title: '作品征集', sched_5_desc: '收集全校原创短片与创作项目',
+    sched_6_title: '线上展出', sched_6_desc: '社团平台统一发布展示',
+    card_1_title: '作品归集计划', card_1_desc: '每两周社团例会打磨创作，积累入库上架成品，落实作品征集规则，正式收录全校同学的短片和各类小项目。',
+    card_2_title: '人物专访栏目', card_2_desc: '按期启动月度人物专访栏目，每月轮换开展校园、城市人物专访，产出配套图文与短片成品。',
+    card_3_title: '平面设计商单', card_3_desc: '积累设计样稿，循序渐进对接外部商单。收入全部充当社团经费与公益开支。',
+    card_4_title: '纪实短片创作', card_4_desc: '每学期完成一部纪实短片，确定选题后启动筹备，学期末产出完整作品。',
+    gallery_label: '作品', gallery_title: '公开发布', gallery_submit: '+ 投稿',
+    join_label: '加入', join_text: 'Media Club 欢迎所有人——摄影师、视觉艺术家、程序员、写作者。使用邀请码注册，加入我们的创作集体。', join_btn: '立即注册',
+    admin_title: '管理后台', admin_tab_publish: '发布', admin_tab_pending: '待审核', admin_tab_members: '成员',
+    admin_pub_video: '发布视频', admin_pub_design: '发布设计', admin_publish_btn: '发布', admin_select_img: '点击选择图片',
+    admin_th_type: '类型', admin_th_title: '标题', admin_th_author: '作者', admin_th_date: '提交时间', admin_th_actions: '操作', admin_th_user: '用户名', admin_th_role: '身份', admin_th_joined: '加入时间',
+    modal_login_title: '登录', modal_login_sub: '登录你的账号', modal_login_btn: '登录', modal_login_switch: '还没有账号？',
+    modal_register_title: '注册', modal_register_sub: '使用邀请码加入', modal_register_btn: '创建账号', modal_register_switch: '已有账号？',
+    modal_profile_title: '个人资料', modal_profile_save: '保存修改',
+    modal_submit_title: '投稿作品', modal_submit_sub: '你的投稿将由管理员审核', modal_submit_btn: '提交审核', modal_submit_note: '审核通过后将在作品区展示。',
+    type_video: '视频', type_design: '设计',
+    label_username: '用户名', label_password: '密码', label_code: '社团邀请码', label_display: '显示名称', label_email: '邮箱（选填）', label_title: '标题', label_url: '链接', label_type: '类型', label_desc: '描述（选填）', label_newpass: '新密码（留空不变）',
+    placeholder_code: '输入邀请码', placeholder_user: '设置用户名', placeholder_name: '别人看到的名字', placeholder_email: 'your@email.com', placeholder_pass: '至少4位字符', placeholder_title: '作品名称', placeholder_url: 'YouTube / Bilibili 链接', placeholder_img: '选择图片文件',
+    gallery_empty: '暂无{tab}。',
+    pending_empty: '暂无待审核投稿。',
+    login_err_empty: '请填写所有字段。', login_err_invalid: '用户名或密码错误。',
+    register_err_empty: '请填写所有字段。', register_err_code: '社团邀请码错误。', register_err_user: '用户名至少3个字符。', register_err_pass: '密码至少4位字符。', register_err_taken: '用户名已被占用。',
+    submit_err_title: '请输入标题。', submit_err_url: '请输入视频链接。', submit_err_file: '请选择图片。',
+    toast_welcome: '欢迎回来，{name}！', toast_register: '欢迎加入 Media Club，{name}！', toast_logout: '已退出。', toast_updated: '资料已更新！', toast_deleted: '已删除。', toast_approved: '已批准！', toast_rejected: '已拒绝。', toast_published: '已发布：{title}', toast_selected: '已选择：{name}', toast_submitted: '已提交审核！', toast_nouser: '用户不存在。',
+    confirm_delete: '删除此作品？', confirm_reject: '拒绝此投稿？', confirm_deluser: '删除用户"{name}"？此操作不可撤销。',
+    approve_btn: '批准', reject_btn: '拒绝', delete_btn: '删除',
+    logout: '退出登录', profile: '个人资料', submit_work: '投稿作品',
+  }
+};
+
+var currentLang = localStorage.getItem('mc_lang') || 'en';
+
+function _t(key, vars) {
+  var lang = LANG_DATA[currentLang] || LANG_DATA.en;
+  var val = lang[key];
+  if (val === undefined) val = LANG_DATA.en[key] || key;
+  if (vars) {
+    for (var k in vars) val = val.replace('{'+k+'}', vars[k]);
+  }
+  return val;
+}
+
+function toggleLang() {
+  currentLang = currentLang === 'en' ? 'zh' : 'en';
+  localStorage.setItem('mc_lang', currentLang);
+  applyLang();
+  document.getElementById('lang-btn').textContent = currentLang === 'en' ? '中' : 'EN';
+}
+
+function applyLang() {
+  // Static i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n');
+    el.textContent = _t(key);
+  });
+  // Page title
+  document.title = _t('page_title');
+  // Lang button
+  var lb = document.getElementById('lang-btn');
+  if (lb) lb.textContent = currentLang === 'en' ? '中' : 'EN';
+  // Info cards
+  renderInfoCards();
+  // Schedule
+  renderSchedule();
+  // Gallery empty state and submit button
+  renderGallery();
+  // Admin tables
+  if (document.getElementById('admin-section').style.display === 'block') {
+    renderPendingTable();
+    renderUsersTable();
+  }
+  // Re-render open modals
+  var modalBody = document.getElementById('modal-body');
+  if (modalBody && modalBody.children.length > 0) {
+    // Check what modal is open by looking at the h2 text
+    var h2 = modalBody.querySelector('h2');
+    if (h2) {
+      var text = h2.textContent;
+      if (text === _t('modal_login_title') || text === 'Login' || text === '登录') {
+        closeModal(); openModal('login');
+      } else if (text === _t('modal_register_title') || text === 'Register' || text === '注册') {
+        closeModal(); openModal('register');
+      } else if (text === _t('modal_profile_title') || text === 'Profile' || text === '个人资料') {
+        closeModal(); openModal('profile');
+      } else if (text === _t('modal_submit_title') || text === 'Submit Work' || text === '投稿作品') {
+        closeModal(); openModal('submit');
+      }
+    }
+  }
+}
+
+function renderInfoCards() {
+  var container = document.getElementById('info-cards');
+  var cards = [];
+  for (var i = 1; i <= 4; i++) {
+    cards.push('<div class="info-card"><div class="num">0' + i + '</div><h4>' + _t('card_' + i + '_title') + '</h4><p>' + _t('card_' + i + '_desc') + '</p></div>');
+  }
+  container.innerHTML = cards.join('');
+}
+
+function renderSchedule() {
+  var container = document.getElementById('schedule-grid');
+  var items = [];
+  for (var i = 1; i <= 6; i++) {
+    items.push('<div class="sched-item"><div class="period">' + _t('sched_' + i + '_title') + '</div><div class="title">' + _t('sched_' + i + '_desc') + '</div></div>');
+  }
+  container.innerHTML = items.join('');
+}
+
+// ======================== DATA LAYER ========================
+var DB = {
+  getUsers: function(){try{return JSON.parse(localStorage.getItem('mc_users'))||[]}catch(e){return []}},
+  saveUsers: function(u){localStorage.setItem('mc_users',JSON.stringify(u))},
+  getMedia: function(){try{return JSON.parse(localStorage.getItem('mc_media'))||[]}catch(e){return []}},
+  saveMedia: function(m){localStorage.setItem('mc_media',JSON.stringify(m))},
+  getSess: function(){try{return JSON.parse(sessionStorage.getItem('mc_current'))}catch(e){return null}},
+  setSess: function(u){if(u)sessionStorage.setItem('mc_current',JSON.stringify(u));else sessionStorage.removeItem('mc_current')}
+};
+
+(function(){var u=DB.getUsers();if(!u.find(function(x){return x.username==='mediaunion'})){u.push({username:'mediaunion',password:'ap995995',displayName:'Admin',role:'admin',email:'',bio:'',joined:new Date().toISOString().split('T')[0]});DB.saveUsers(u)}})();
+
+// ======================== AUTH ========================
+var SECRET_CODE = 'mediadesigning123';
+function getCurrentUser(){return DB.getSess()}
+function isAdmin(){var u=getCurrentUser();return u&&u.role==='admin'}
+
+function handleLogin(){
+  var u=document.getElementById('login-user').value.trim();
+  var p=document.getElementById('login-pass').value;
+  var e=document.getElementById('login-error');
+  if(!u||!p){e.textContent=_t('login_err_empty');e.style.display='block';return}
+  var users=DB.getUsers();
+  var found=users.find(function(x){return x.username===u&&x.password===p});
+  if(!found){e.textContent=_t('login_err_invalid');e.style.display='block';return}
+  DB.setSess({username:found.username,password:found.password,displayName:found.displayName||found.username,role:found.role,email:found.email||'',bio:found.bio||'',joined:found.joined});
+  closeModal();refreshUI();toast(_t('toast_welcome',{name:found.displayName||found.username}));
+}
+
+function handleRegister(){
+  var code=document.getElementById('reg-code').value.trim();
+  var user=document.getElementById('reg-user').value.trim();
+  var pass=document.getElementById('reg-pass').value;
+  var name=document.getElementById('reg-name').value.trim()||user;
+  var email=document.getElementById('reg-email').value.trim();
+  var e=document.getElementById('register-error');
+  if(!code||!user||!pass){e.textContent=_t('register_err_empty');e.style.display='block';return}
+  if(code!==SECRET_CODE){e.textContent=_t('register_err_code');e.style.display='block';return}
+  if(user.length<3){e.textContent=_t('register_err_user');e.style.display='block';return}
+  if(pass.length<4){e.textContent=_t('register_err_pass');e.style.display='block';return}
+  var users=DB.getUsers();
+  if(users.find(function(x){return x.username===user})){e.textContent=_t('register_err_taken');e.style.display='block';return}
+  users.push({username:user,password:pass,displayName:name,role:'member',email:email,bio:'',joined:new Date().toISOString().split('T')[0]});
+  DB.saveUsers(users);
+  DB.setSess({username:user,password:pass,displayName:name,role:'member',email:email,bio:'',joined:new Date().toISOString().split('T')[0]});
+  closeModal();refreshUI();toast(_t('toast_register',{name:name}));
+}
+
+function logout(){
+  DB.setSess(null);refreshUI();
+  var as=document.getElementById('admin-section');if(as)as.style.display='none';
+  toast(_t('toast_logout'));
+}
+
+// ======================== MODAL ========================
+function openModal(type){
+  document.getElementById('modal-overlay').classList.add('open');
+  var b=document.getElementById('modal-body');
+  if(type==='login')renderLogin(b);else if(type==='register')renderRegister(b);else if(type==='profile')renderProfile(b);else if(type==='submit')renderSubmit(b);
+}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open')}
+
+function renderLogin(c){
+  c.innerHTML='<h2>'+_t('modal_login_title')+'</h2><div class="sub">'+_t('modal_login_sub')+'</div><div class="modal-error" id="login-error"></div>'+
+    '<div class="modal-field"><label>'+_t('label_username')+'</label><input type="text" id="login-user" placeholder="'+_t('label_username')+'" autocomplete="username"></div>'+
+    '<div class="modal-field"><label>'+_t('label_password')+'</label><input type="password" id="login-pass" placeholder="'+_t('label_password')+'" autocomplete="current-password"></div>'+
+    '<button class="modal-submit" onclick="handleLogin()">'+_t('modal_login_btn')+'</button>'+
+    '<div class="modal-switch">'+_t('modal_login_switch')+' <a onclick="openModal(\'register\')">'+_t('modal_register_btn')+'</a></div>';
+  setTimeout(function(){var e=document.getElementById('login-user');if(e)e.focus()},100);
+}
+
+function renderRegister(c){
+  c.innerHTML='<h2>'+_t('modal_register_title')+'</h2><div class="sub">'+_t('modal_register_sub')+'</div><div class="modal-error" id="register-error"></div>'+
+    '<div class="modal-field"><label>'+_t('label_code')+'</label><input type="text" class="input-code" id="reg-code" placeholder="'+_t('placeholder_code')+'"></div>'+
+    '<div class="modal-field"><label>'+_t('label_username')+'</label><input type="text" id="reg-user" placeholder="'+_t('placeholder_user')+'"></div>'+
+    '<div class="modal-field"><label>'+_t('label_display')+'</label><input type="text" id="reg-name" placeholder="'+_t('placeholder_name')+'"></div>'+
+    '<div class="modal-field"><label>'+_t('label_email')+'</label><input type="email" id="reg-email" placeholder="'+_t('placeholder_email')+'"></div>'+
+    '<div class="modal-field"><label>'+_t('label_password')+'</label><input type="password" id="reg-pass" placeholder="'+_t('placeholder_pass')+'"></div>'+
+    '<button class="modal-submit" onclick="handleRegister()">'+_t('modal_register_btn')+'</button>'+
+    '<div class="modal-switch">'+_t('modal_register_switch')+' <a onclick="openModal(\'login\')">'+_t('modal_login_btn')+'</a></div>';
+  setTimeout(function(){var e=document.getElementById('reg-code');if(e)e.focus()},100);
+}
+
+function renderProfile(c){
+  var u=getCurrentUser();
+  if(!u){c.innerHTML='<p>Not logged in.</p>';return}
+  c.innerHTML='<h2>'+_t('modal_profile_title')+'</h2><div class="sub">'+u.displayName+'</div>'+
+    '<div class="modal-field"><label>'+_t('label_display')+'</label><input type="text" id="prof-name" value="'+u.displayName+'"></div>'+
+    '<div class="modal-field"><label>'+_t('label_email').replace('（选填）','').replace('(optional)','')+'</label><input type="email" id="prof-email" value="'+(u.email||'')+'"></div>'+
+    '<div class="modal-field"><label>'+_t('label_newpass')+'</label><input type="password" id="prof-pass" placeholder="'+_t('label_newpass')+'"></div>'+
+    '<div class="modal-error" id="profile-error"></div>'+
+    '<button class="modal-submit" onclick="saveProfile()">'+_t('modal_profile_save')+'</button>'+
+    '<div style="text-align:center;margin-top:16px"><span style="font-size:11px;color:var(--text-muted);letter-spacing:.05em">'+_t('label_joined')+' '+u.joined+' &middot; '+(u.role==='admin'?'Admin':'Member')+'</span></div>';
+}
+
+function saveProfile(){
+  var u=getCurrentUser();if(!u)return
+  var name=document.getElementById('prof-name').value.trim()||u.displayName;
+  var email=document.getElementById('prof-email').value.trim();
+  var pass=document.getElementById('prof-pass').value;
+  var users=DB.getUsers();
+  var idx=users.findIndex(function(x){return x.username===u.username});
+  if(idx===-1){toast(_t('toast_nouser'));return}
+  users[idx].displayName=name;users[idx].email=email;
+  if(pass)users[idx].password=pass;
+  DB.saveUsers(users);
+  DB.setSess({username:u.username,password:pass||u.password,displayName:name,role:u.role,email:email,bio:u.bio||'',joined:u.joined});
+  closeModal();refreshUI();toast(_t('toast_updated'));
+}
+
+function openSubmitModal(){
+  var u=getCurrentUser();if(!u){openModal('login');return}
+  openModal('submit');
+}
+
+function renderSubmit(c){
+  c.innerHTML='<h2>'+_t('modal_submit_title')+'</h2><div class="sub">'+_t('modal_submit_sub')+'</div><div class="modal-error" id="submit-error"></div>'+
+    '<div class="modal-field"><label>'+_t('label_type')+'</label><select id="submit-type"><option value="video">'+_t('type_video')+'</option><option value="design">'+_t('type_design')+'</option></select></div>'+
+    '<div class="modal-field"><label>'+_t('label_title')+'</label><input type="text" id="submit-title" placeholder="'+_t('placeholder_title')+'"></div>'+
+    '<div class="modal-field" id="submit-url-field"><label>'+_t('label_url')+'</label><input type="text" id="submit-url" placeholder="'+_t('placeholder_url')+'"></div>'+
+    '<div class="modal-field" id="submit-file-field" style="display:none"><label>'+_t('placeholder_img')+'</label><input type="file" id="submit-file" accept="image/*"></div>'+
+    '<div class="modal-field"><label>'+_t('label_desc')+'</label><textarea id="submit-desc" rows="3" placeholder="'+_t('label_desc')+'"></textarea></div>'+
+    '<button class="modal-submit" onclick="handleSubmit()">'+_t('modal_submit_btn')+'</button>'+
+    '<div class="modal-switch">'+_t('modal_submit_note')+'</div>';
+  document.getElementById('submit-type').addEventListener('change',function(){
+    document.getElementById('submit-url-field').style.display=this.value==='video'?'block':'none';
+    document.getElementById('submit-file-field').style.display=this.value==='design'?'block':'none';
+  });
+}
+
+function handleSubmit(){
+  var u=getCurrentUser();if(!u){closeModal();openModal('login');return}
+  var type=document.getElementById('submit-type').value;
+  var title=document.getElementById('submit-title').value.trim();
+  var desc=document.getElementById('submit-desc').value.trim();
+  var e=document.getElementById('submit-error');
+  if(!title){e.textContent=_t('submit_err_title');e.style.display='block';return}
+  var data={type:type==='video'?'videos':'designs',title:title,description:desc,author:u.displayName||u.username,username:u.username,status:'pending',submitted:new Date().toISOString().split('T')[0]};
+  if(type==='video'){
+    var url=document.getElementById('submit-url').value.trim();
+    if(!url){e.textContent=_t('submit_err_url');e.style.display='block';return}
+    data.url=url;data.embedUrl=getEmbedUrl(url);
+    var media=DB.getMedia();media.unshift(data);DB.saveMedia(media);
+    closeModal();toast(_t('toast_submitted'));
+    if(isAdmin()&&document.getElementById('admin-section').style.display==='block')renderPendingTable();
+  } else {
+    var file=document.getElementById('submit-file').files[0];
+    if(!file){e.textContent=_t('submit_err_file');e.style.display='block';return}
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      data.url=ev.target.result;
+      var media=DB.getMedia();media.unshift(data);DB.saveMedia(media);
+      closeModal();toast(_t('toast_submitted'));
+      if(isAdmin()&&document.getElementById('admin-section').style.display==='block')renderPendingTable();
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+// ======================== GALLERY ========================
+var currentGalleryTab='videos';
+
+function switchGallery(tab){
+  currentGalleryTab=tab;
+  document.querySelectorAll('.gallery-tab').forEach(function(el){el.classList.toggle('active',el.dataset.tab===tab)});
+  renderGallery();
+}
+
+function getEmbedUrl(url){
+  if(!url)return''
+  var yt=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+  if(yt)return'https://www.youtube.com/embed/'+yt[1]
+  var bv=url.match(/bilibili\.com\/video\/(BV[a-zA-Z0-9]+)/);
+  if(bv)return'https://player.bilibili.com/player.html?bvid='+bv[1]+'&autoplay=0'
+  return url
+}
+
+function renderGallery(){
+  var grid=document.getElementById('media-grid');
+  if(!grid)return;
+  var all=DB.getMedia();
+  var items=all.filter(function(m){return m.type===currentGalleryTab&&m.status!=='rejected'&&(m.status==='approved'||!m.status)});
+  var cnt=document.getElementById('gallery-count');
+  if(cnt)cnt.textContent=items.length;
+  var sb=document.getElementById('gallery-submit-btn');
+  if(sb)sb.style.display=getCurrentUser()?'inline-block':'none';
+  if(!items.length){
+    var labelKey=currentGalleryTab==='videos'?'Videos':'Designs';
+    grid.innerHTML='<div class="empty-state"><div class="icon">&#9670;</div>'+_t('gallery_empty',{tab:labelKey})+'</div>';
+    return
+  }
+  grid.innerHTML=items.map(function(m,i){
+    var isVid=m.type==='videos';
+    var eu=m.embedUrl||getEmbedUrl(m.url);
+    var auth=m.author||'Media Club';
+    var sd=isAdmin()?'<button class="del-btn" onclick="event.stopPropagation();deleteMediaItem('+i+')" title="Delete">&times;</button>':'';
+    var sh=m.status&&m.status!=='approved'?'<div class="status-badge '+m.status+'">'+m.status+'</div>':'';
+    return '<div class="media-card" onclick="'+(isVid?'openVideo(\''+eu+'\')':'openImage(\''+m.url+'\')')+'">'+
+      (isVid?'<div style="width:100%;height:100%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;font-size:28px;color:rgba(255,255,255,.08)">&#9654;</div><div class="play-btn"><span>&#9654;</span></div>':'<img src="'+m.url+'" alt="'+m.title+'" loading="lazy">')+
+      sd+sh+
+      '<div class="meta"><div class="m-title">'+m.title+'</div><div class="m-author">'+auth+'</div></div></div>'
+  }).join('');
+}
+
+function openVideo(url){
+  if(!url)return;
+  var w=window.open('','_blank','width=960,height=540');
+  if(w)w.document.write('<style>body{margin:0;background:#000;display:flex;align-items:center;justify-content:center;height:100vh;}</style><iframe src="'+url+'" width="960" height="540" frameborder="0" allowfullscreen></iframe>')
+}
+function openImage(url){
+  var w=window.open('','_blank');
+  if(w)w.document.write('<style>body{margin:0;background:#000;display:flex;align-items:center;justify-content:center;height:100vh;}</style><img src="'+url+'" style="max-width:90vw;max-height:90vh;object-fit:contain;">')
+}
+
+function deleteMediaItem(idx){
+  if(!confirm(_t('confirm_delete')))return;
+  var media=DB.getMedia();
+  var items=media.filter(function(m){return m.type===currentGalleryTab&&m.status!=='rejected'&&(m.status==='approved'||!m.status)});
+  var item=items[idx];var ri=media.findIndex(function(m){return m===item});
+  if(ri>-1){media.splice(ri,1);DB.saveMedia(media);renderGallery();toast(_t('toast_deleted'))}
+}
+
+// ======================== ADMIN ========================
+function toggleAdmin(show){
+  var sec=document.getElementById('admin-section');
+  if(show){sec.style.display='block';renderPendingTable();renderUsersTable()}
+  else sec.style.display='none'
+}
+
+function switchAdminTab(tab){
+  document.querySelectorAll('.admin-tab').forEach(function(el){el.classList.toggle('active',el.dataset.atab===tab)});
+  document.querySelectorAll('.admin-section').forEach(function(el){el.classList.toggle('open',el.id==='admin-'+tab)});
+}
+
+function renderPendingTable(){
+  var tbody=document.getElementById('pending-table-body');
+  var media=DB.getMedia();
+  var pending=media.filter(function(m){return m.status==='pending'});
+  var pc=document.getElementById('pending-count');
+  if(pc)pc.textContent=pending.length?'('+pending.length+')':'';
+  if(!pending.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:40px;color:rgba(232,229,219,.3)">'+_t('pending_empty')+'</td></tr>';return}
+  tbody.innerHTML=pending.map(function(m,i){
+    var tl=m.type==='videos'?_t('type_video'):_t('type_design');
+    return '<tr><td>'+tl+'</td><td>'+m.title+'</td><td>'+m.author+'</td><td>'+m.submitted+'</td>'+
+      '<td class="admin-actions"><button onclick="approveItem('+i+')" style="border-color:rgba(100,200,100,.3);color:rgba(144,200,144,.8)">'+_t('approve_btn')+'</button>'+
+      '<button class="danger" onclick="rejectItem('+i+')">'+_t('reject_btn')+'</button></td></tr>'
+  }).join('');
+}
+
+function approveItem(idx){
+  var media=DB.getMedia();
+  var pending=media.filter(function(m){return m.status==='pending'});
+  if(pending[idx]){pending[idx].status='approved';DB.saveMedia(media)}
+  renderPendingTable();renderGallery();toast(_t('toast_approved'))
+}
+
+function rejectItem(idx){
+  if(!confirm(_t('confirm_reject')))return;
+  var media=DB.getMedia();
+  var pending=media.filter(function(m){return m.status==='pending'});
+  if(pending[idx]){pending[idx].status='rejected';DB.saveMedia(media)}
+  renderPendingTable();toast(_t('toast_rejected'))
+}
+
+function renderUsersTable(){
+  var tbody=document.getElementById('users-table-body');
+  if(!tbody)return;
+  var users=DB.getUsers();
+  tbody.innerHTML=users.map(function(u){
+    var rc=u.role==='admin'?'role-admin':'role-member';
+    var rl=u.role==='admin'?'Admin':'Member';
+    var db=u.role==='admin'?'':'<button class="danger" onclick="deleteUser(\''+u.username+'\')">'+_t('delete_btn')+'</button>';
+    return '<tr><td>'+(u.displayName||u.username)+' <span style="font-size:10px;color:rgba(232,229,219,.3)">@'+u.username+'</span></td><td class="'+rc+'">'+rl+'</td><td>'+u.joined+'</td><td class="admin-actions">'+db+'</td></tr>'
+  }).join('');
+}
+
+function deleteUser(username){
+  if(!confirm(_t('confirm_deluser',{name:username})))return;
+  DB.saveUsers(DB.getUsers().filter(function(u){return u.username!==username}));
+  renderUsersTable();toast(_t('toast_deleted'))
+}
+
+// ======================== ADMIN PUBLISH ========================
+var pendingDesignData=null;
+
+function handleDesignSelect(e){
+  var file=e.target.files[0];if(!file)return;
+  if(file.size>5*1024*1024){toast('File too large. Max 5MB.');return}
+  var r=new FileReader();
+  r.onload=function(ev){pendingDesignData=ev.target.result;toast(_t('toast_selected',{name:file.name}))};
+  r.readAsDataURL(file)
+}
+
+function adminPublishVideo(){
+  var url=document.getElementById('video-url-input').value.trim();
+  var title=document.getElementById('video-title-input').value.trim();
+  if(!url||!title){toast('Please enter URL and title.');return}
+  var media=DB.getMedia();
+  media.unshift({type:'videos',url:url,title:title,embedUrl:getEmbedUrl(url),author:'Admin',status:'approved',submitted:new Date().toISOString().split('T')[0]});
+  DB.saveMedia(media);
+  document.getElementById('video-url-input').value='';document.getElementById('video-title-input').value='';
+  renderGallery();toast(_t('toast_published',{title:title}))
+}
+
+function adminPublishDesign(){
+  var title=document.getElementById('design-title-input').value.trim();
+  if(!pendingDesignData){toast('Please select an image.');return}
+  if(!title){toast('Please enter a title.');return}
+  var media=DB.getMedia();
+  media.unshift({type:'designs',url:pendingDesignData,title:title,author:'Admin',status:'approved',submitted:new Date().toISOString().split('T')[0]});
+  DB.saveMedia(media);
+  document.getElementById('design-title-input').value='';document.getElementById('design-file-input').value='';
+  pendingDesignData=null;renderGallery();toast(_t('toast_published',{title:title}))
+}
+
+// ======================== UI ========================
+function refreshUI(){
+  var u=getCurrentUser();
+  var el=document.getElementById('nav-auth');
+  if(u){
+    var init=(u.displayName||u.username).charAt(0).toUpperCase();
+    el.innerHTML='<div class="nav-user" onclick="event.stopPropagation();toggleDropdown()">'+
+      '<span class="nav-user-avatar">'+init+'</span><span>'+(u.displayName||u.username)+'</span>'+
+      '<div class="dropdown" id="user-dropdown">'+
+      '<button class="dropdown-item" onclick="event.stopPropagation();closeDropdown();openModal(\'profile\')">'+_t('profile')+'</button>'+
+      '<button class="dropdown-item" onclick="event.stopPropagation();closeDropdown();openSubmitModal()">'+_t('submit_work')+'</button>'+
+      '<div class="dropdown-divider"></div>'+
+      '<button class="dropdown-item" onclick="event.stopPropagation();closeDropdown();logout()">'+_t('logout')+'</button></div></div>';
+    var sb=document.getElementById('gallery-submit-btn');if(sb)sb.style.display='inline-block';
+  } else {
+    el.innerHTML='<a class="nav-btn" onclick="openModal(\'login\')">'+_t('modal_login_btn')+'</a>';
+    var sb2=document.getElementById('gallery-submit-btn');if(sb2)sb2.style.display='none';
+  }
+  if(u&&u.role==='admin')toggleAdmin(true);
+}
+
+function toggleDropdown(){var d=document.getElementById('user-dropdown');if(d)d.classList.toggle('open')}
+function closeDropdown(){var d=document.getElementById('user-dropdown');if(d)d.classList.remove('open')}
+document.addEventListener('click',function(){closeDropdown()});
+
+function toast(msg){
+  var t=document.getElementById('toast');t.textContent=msg;t.style.display='block';
+  setTimeout(function(){t.style.display='none'},3500)
+}
+
+function scrollToId(id){var el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth'})}
+
+// ======================== UNICORN STUDIO ========================
+(function(){
+  function initUS(){
+    var u=window.UnicornStudio;
+    if(u&&u.init){(document.readyState==='loading'?document.addEventListener('DOMContentLoaded',goUS):goUS())}
+    else{
+      window.UnicornStudio={isInitialized:false};
+      var s=document.createElement('script');
+      s.src='https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.2.6/dist/unicornStudio.umd.js';
+      s.onload=function(){(document.readyState==='loading'?document.addEventListener('DOMContentLoaded',goUS):goUS())};
+      (document.head||document.body).appendChild(s)
+    }
+  }
+  function rmWm(){
+    document.querySelectorAll('a[href*="unicorn.studio"]').forEach(function(el){
+      if(el.closest('[data-scene-id]'))el.remove()
+    })
+  }
+  function goUS(){
+    var o=new MutationObserver(function(){rmWm()});
+    o.observe(document.body,{childList:true,subtree:true});
+    window.UnicornStudio.init().then(function(){
+      setTimeout(rmWm,500);setTimeout(rmWm,1500);setTimeout(rmWm,3000);
+      setTimeout(function(){o.disconnect()},5000)
+    }).catch(function(){o.disconnect()})
+  }
+  initUS()
+})();
+
+// ======================== SCROLL ========================
+(function(){
+  var nav=document.getElementById('nav'),hero=document.getElementById('hero');
+  window.addEventListener('scroll',function(){
+    if(!hero)return;var sc=window.scrollY,h=hero.offsetHeight;
+    if(sc>h-100){nav.classList.add('scrolled');nav.style.mixBlendMode='normal'}
+    else{nav.classList.remove('scrolled');nav.style.mixBlendMode='difference'}
+    nav.style.opacity=sc<h-100?1:Math.max(0.85,1-(sc-h+100)/300)
+  },{passive:true})
+})();
+
+// ======================== INIT ========================
+applyLang();
+refreshUI();
+renderGallery();
+</script>
+</body>
+</html>
