@@ -218,8 +218,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
   .hero-title{font-size:clamp(40px,15vw,72px)}.section-title{font-size:36px}
   .modal{padding:32px 24px}
 }
-</style>
-</head>
+</style></head>
 <body>
 <div class="pixel-grid"></div>
 
@@ -230,6 +229,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
     <li><a onclick="scrollToId('intro')"><span data-i18n="nav_about">About</span></a></li>
     <li class="nav-hide"><a onclick="scrollToId('schedule')"><span data-i18n="nav_schedule">Schedule</span></a></li>
     <li class="nav-hide"><a onclick="scrollToId('gallery')"><span data-i18n="nav_gallery">Gallery</span></a></li>
+    <li class="nav-hide"><a onclick="scrollToId('blog')"><span data-i18n="nav_blog">Blog</span></a></li>
     <li><a onclick="scrollToId('join')"><span data-i18n="nav_join">Join</span></a></li>
     <li><button class="lang-btn" id="lang-btn" onclick="toggleLang()">中</button></li>
     <li id="nav-auth"></li>
@@ -308,6 +308,27 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
   </div>
 </section>
 
+
+<!-- Blog / Creative Writing -->
+<section class="section-dark blog-wrap" id="blog">
+  <div class="blog-scene">
+    <div style="width:100%;height:100%" data-us-project="xUcs8bEn5yB2Oyyi7mDJ"></div>
+  </div>
+  <div class="blog-content">
+    <div class="blog-section-label">/ 004 <span data-i18n="blog_label">Creative Writing</span></div>
+    <h2 class="blog-section-title"><span class="cut-clip" data-i18n="blog_title">Blog</span></h2>
+    <div class="notif-bar" id="blog-notif-bar">
+      <span class="notif-dot"></span>
+      <span class="notif-text" id="blog-notif-text"></span>
+    </div>
+    <div style="position:relative">
+      <button class="blog-submit-btn" id="blog-submit-btn" onclick="openBlogSubmit()" style="display:none"><span data-i18n="blog_submit">+ Write</span></button>
+      <div class="blog-carousel-wrap" id="blog-carousel">
+        <div class="blog-track" id="blog-track"></div>
+      </div>
+    </div>
+  </div>
+</section>
 <!-- Admin -->
 <section class="section section-dark" id="admin-section" style="display:none">
   <div class="section-label">/ Admin</div>
@@ -405,7 +426,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 var LANG_DATA = {
   en: {
     page_title: 'Media Club',
-    nav_about: 'About', nav_schedule: 'Schedule', nav_gallery: 'Gallery', nav_join: 'Join',
+    nav_about: 'About', nav_schedule: 'Schedule', nav_gallery: 'Gallery', nav_blog: 'Blog', nav_join: 'Join',
     hero_loc: 'Beijing / College of Arts',
     about_label: 'About', about_title: 'About Us',
     about_mission_h: 'Our Mission',
@@ -429,6 +450,25 @@ var LANG_DATA = {
     card_4_title: 'Documentary', card_4_desc: 'One documentary per semester: select a topic, prepare, and deliver a complete film by semester\u2019s end.',
     gallery_label: 'Gallery', gallery_title: 'Public Gallery', gallery_submit: '+ Submit',
     join_label: 'Join', join_text: 'Media Club is open to all \u2014 photographers, visual artists, programmers, writers. Register with the club invitation code to join our creative collective.', join_btn: 'Register Now',
+    blog_label: 'Creative Writing', blog_title: 'Blog',
+    blog_submit: '+ Write',
+    blog_type_interview: 'Interviews', blog_type_behind: 'Behind the Scenes', blog_type_design: 'Design Notes', blog_type_tips: 'Tips & Tricks',
+    blog_empty: 'No posts yet. Be the first to write!',
+    blog_submit_title: 'Submit a Blog Post', blog_submit_sub: 'Your post will be reviewed by an admin',
+    blog_choose_type: 'Choose category', blog_write_content: 'Write your post...',
+    blog_toast_submitted: 'Blog post submitted for review!',
+    notif_remark: 'Admin remark on your blog "{title}": {remark}',
+    notif_approved: 'Your blog "{title}" has been approved!',
+    notif_rejected: 'Your blog "{title}" has been rejected.',
+    blog_approve_remark_label: 'Remark (optional):',
+    blog_approve_remark_placeholder: 'Add a note for the author...',
+    blog_edit_label: 'Edit post body:',
+    blog_save_btn: 'Save',
+    blog_cancel_btn: 'Cancel',
+    blog_delete_btn: 'Delete',
+    blog_toast_saved: 'Blog post updated!',
+    blog_toast_deleted: 'Blog post deleted.',
+    blog_remarks_label: 'Admin Remarks:',
     admin_title: 'Admin Dashboard', admin_tab_publish: 'Publish', admin_tab_pending: 'Pending', admin_tab_members: 'Members',
     admin_pub_video: 'Publish Video', admin_pub_design: 'Publish Design', admin_publish_btn: 'Publish', admin_select_img: 'Click to select image',
     admin_th_type: 'Type', admin_th_title: 'Title', admin_th_author: 'Author', admin_th_date: 'Submitted', admin_th_actions: 'Actions', admin_th_user: 'Username', admin_th_role: 'Role', admin_th_joined: 'Joined',
@@ -446,12 +486,13 @@ var LANG_DATA = {
     submit_err_title: 'Please enter a title.', submit_err_url: 'Please enter a video URL.', submit_err_file: 'Please select an image.',
     toast_welcome: 'Welcome back, {name}!', toast_register: 'Welcome to Media Club, {name}!', toast_logout: 'Logged out.', toast_updated: 'Profile updated!', toast_deleted: 'Deleted.', toast_approved: 'Approved!', toast_rejected: 'Rejected.', toast_published: 'Published: {title}', toast_selected: 'Selected: {name}', toast_submitted: 'Submitted for review!', toast_nouser: 'User not found.',
     confirm_delete: 'Delete this item?', confirm_reject: 'Reject this submission?', confirm_deluser: 'Delete user \"{name}\"? This cannot be undone.',
+    admin_tab_blog: 'Blog',
     approve_btn: 'Approve', reject_btn: 'Reject', delete_btn: 'Delete',
     logout: 'Logout', profile: 'Profile', submit_work: 'Submit Work',
   },
   zh: {
     page_title: 'Media Club — 媒介社',
-    nav_about: '社团介绍', nav_schedule: '日程', nav_gallery: '作品', nav_join: '加入',
+    nav_about: '社团介绍', nav_schedule: '日程', nav_gallery: '作品', nav_blog: '随笔', nav_join: '加入',
     hero_loc: '北京 / 艺术学院',
     about_label: '社团介绍', about_title: '媒介社',
     about_mission_h: '社团宗旨',
@@ -475,6 +516,25 @@ var LANG_DATA = {
     card_4_title: '纪实短片创作', card_4_desc: '每学期完成一部纪实短片，确定选题后启动筹备，学期末产出完整作品。',
     gallery_label: '作品', gallery_title: '公开发布', gallery_submit: '+ 投稿',
     join_label: '加入', join_text: 'Media Club 欢迎所有人——摄影师、视觉艺术家、程序员、写作者。使用邀请码注册，加入我们的创作集体。', join_btn: '立即注册',
+    blog_label: '创作随笔', blog_title: '随笔',
+    blog_submit: '+ 投稿',
+    blog_type_interview: '访谈文稿', blog_type_behind: '幕后纪实', blog_type_design: '设计心得', blog_type_tips: '拍摄技巧',
+    blog_empty: '暂无内容，快来写第一篇吧！',
+    blog_submit_title: '投稿随笔', blog_submit_sub: '你的投稿将由管理员审核',
+    blog_choose_type: '选择分类', blog_write_content: '写下你的内容...',
+    blog_toast_submitted: '随笔已提交审核！',
+    notif_remark: '管理员对你投稿的「{title}」备注：{remark}',
+    notif_approved: '你的投稿「{title}」已通过审核！',
+    notif_rejected: '你的投稿「{title}」已被退回。',
+    blog_approve_remark_label: '备注（可选）：',
+    blog_approve_remark_placeholder: '给作者留个言…',
+    blog_edit_label: '编辑正文：',
+    blog_save_btn: '保存',
+    blog_cancel_btn: '取消',
+    blog_delete_btn: '删除',
+    blog_toast_saved: '随笔已更新！',
+    blog_toast_deleted: '随笔已删除。',
+    blog_remarks_label: '管理员备注：',
     admin_title: '管理后台', admin_tab_publish: '发布', admin_tab_pending: '待审核', admin_tab_members: '成员',
     admin_pub_video: '发布视频', admin_pub_design: '发布设计', admin_publish_btn: '发布', admin_select_img: '点击选择图片',
     admin_th_type: '类型', admin_th_title: '标题', admin_th_author: '作者', admin_th_date: '提交时间', admin_th_actions: '操作', admin_th_user: '用户名', admin_th_role: '身份', admin_th_joined: '加入时间',
@@ -492,6 +552,7 @@ var LANG_DATA = {
     submit_err_title: '请输入标题。', submit_err_url: '请输入视频链接。', submit_err_file: '请选择图片。',
     toast_welcome: '欢迎回来，{name}！', toast_register: '欢迎加入 Media Club，{name}！', toast_logout: '已退出。', toast_updated: '资料已更新！', toast_deleted: '已删除。', toast_approved: '已批准！', toast_rejected: '已拒绝。', toast_published: '已发布：{title}', toast_selected: '已选择：{name}', toast_submitted: '已提交审核！', toast_nouser: '用户不存在。',
     confirm_delete: '删除此作品？', confirm_reject: '拒绝此投稿？', confirm_deluser: '删除用户"{name}"？此操作不可撤销。',
+    admin_tab_blog: '随笔',
     approve_btn: '批准', reject_btn: '拒绝', delete_btn: '删除',
     logout: '退出登录', profile: '个人资料', submit_work: '投稿作品',
   }
@@ -533,6 +594,7 @@ function applyLang() {
   renderSchedule();
   // Gallery empty state and submit button
   renderGallery();
+  renderBlog();
   // Admin tables
   if (document.getElementById('admin-section').style.display === 'block') {
     renderPendingTable();
@@ -556,8 +618,8 @@ function applyLang() {
       }
     }
   }
-}
 
+}
 function renderInfoCards() {
   var container = document.getElementById('info-cards');
   var cards = [];
@@ -586,9 +648,12 @@ var DB = {
   setSess: function(u){if(u)sessionStorage.setItem('mc_current',JSON.stringify(u));else sessionStorage.removeItem('mc_current')}
 };
 
-(function(){var u=DB.getUsers();if(!u.find(function(x){return x.username==='mediaunion'})){u.push({username:'mediaunion',password:'ap995995',displayName:'Admin',role:'admin',email:'',bio:'',joined:new Date().toISOString().split('T')[0]});DB.saveUsers(u)}})();
+
 
 // ======================== AUTH ========================
+
+(function(){var u=DB.getUsers();if(!u.find(function(x){return x.username==='mediaunion'})){u.push({username:'mediaunion',password:'ap995995',displayName:'Admin',role:'admin',email:'',bio:'',joined:new Date().toISOString().split('T')[0]});DB.saveUsers(u)}})();
+
 var SECRET_CODE = 'mediadesigning123';
 function getCurrentUser(){return DB.getSess()}
 function isAdmin(){var u=getCurrentUser();return u&&u.role==='admin'}
@@ -634,7 +699,7 @@ function logout(){
 function openModal(type){
   document.getElementById('modal-overlay').classList.add('open');
   var b=document.getElementById('modal-body');
-  if(type==='login')renderLogin(b);else if(type==='register')renderRegister(b);else if(type==='profile')renderProfile(b);else if(type==='submit')renderSubmit(b);
+  if(type==='login')renderLogin(b);else if(type==='register')renderRegister(b);else if(type==='profile')renderProfile(b);else if(type==='submit')renderSubmit(b);else if(type==='blogsubmit')renderBlogSubmit(b);
 }
 function closeModal(){document.getElementById('modal-overlay').classList.remove('open')}
 
@@ -742,6 +807,7 @@ function switchGallery(tab){
   currentGalleryTab=tab;
   document.querySelectorAll('.gallery-tab').forEach(function(el){el.classList.toggle('active',el.dataset.tab===tab)});
   renderGallery();
+  renderBlog();
 }
 
 function getEmbedUrl(url){
@@ -923,6 +989,251 @@ function toast(msg){
 
 function scrollToId(id){var el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth'})}
 
+// ======================== BLOG / CREATIVE WRITING ========================
+function getBlogPosts(){try{return JSON.parse(localStorage.getItem('mc_blog'))||[]}catch(e){return []}}
+function saveBlogPosts(p){localStorage.setItem('mc_blog',JSON.stringify(p))}
+
+function renderBlog(){
+  var track=document.getElementById('blog-track');
+  if(!track)return;
+  var posts=getBlogPosts();
+  var approved=posts.filter(function(p){return p.status==='approved'});
+  var sb=document.getElementById('blog-submit-btn');
+  if(sb)sb.style.display=getCurrentUser()?'inline-block':'none';
+  if(!approved.length){
+    track.innerHTML='<div class="blog-empty" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:100%;text-align:center"><div class="icon">&#9670;</div>'+_t('blog_empty')+'</div>';
+    return;
+  }
+  var cards=[];
+  var radius=380;
+  var total=Math.min(approved.length,8);
+  var angleStep=360/total;
+  approved.slice(0,8).forEach(function(p,i){
+    var angle=angleStep*i;
+    var rad=angle*Math.PI/180;
+    var x=Math.sin(rad)*radius;
+    var z=-Math.cos(rad)*radius;
+    var catKey='blog_type_'+p.category;
+    var categoryLabel=_t(catKey);
+    var body=escapeHtml(p.body||'');
+    var canEdit=isAdmin();
+    var remarksHtml='';
+    if(p.remarks&&p.remarks.length){
+      remarksHtml='<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06)"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(232,229,219,.4)">'+_t('blog_remarks_label')+'</span>';
+      p.remarks.forEach(function(r){
+        remarksHtml+='<div style="font-size:11px;color:rgba(232,229,219,.6);margin-top:4px">@'+(r.by||'Admin')+': '+escapeHtml(r.text)+' <span style="font-size:9px;color:rgba(232,229,219,.2)">'+r.date+'</span></div>';
+      });
+      remarksHtml+='</div>';
+    }
+    cards.push('<div class="blog-glass face-front" data-idx="'+i+'" style="transform:translate3d('+x+'px,'+(-60)+'px,'+z+'px) rotateY('+(-angle)+'deg)">'+
+      '<div class="blog-meta">'+categoryLabel+'</div>'+
+      '<h4>'+escapeHtml(p.title)+'</h4>'+
+      '<div class="blog-author">'+escapeHtml(p.author)+' &middot; '+p.submitted+'</div>'+
+      '<div class="blog-body" id="blog-body-'+i+'">'+body+'</div>'+
+      (canEdit?'<div class="blog-edit-wrap" id="blog-edit-'+i+'" style="display:none"><textarea id="blog-edit-textarea-'+i+'">'+escapeHtml(p.body||'')+'</textarea><div class="edit-actions"><button onclick="saveBlogEdit('+i+')">'+_t('blog_save_btn')+'</button><button onclick="cancelBlogEdit('+i+')">'+_t('blog_cancel_btn')+'</button><button onclick="deleteBlogPost('+i+')" style="border-color:rgba(255,100,100,.3);color:rgba(255,100,100,.7)">'+_t('blog_delete_btn')+'</button></div></div>' : '')+
+      (canEdit?'<button onclick="editBlogPost('+i+')" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(232,229,219,.4);background:none;border:none;cursor:pointer;padding:0;margin-top:8px;font-family:var(--font)">'+_t('blog_edit_label')+'</button>':'')+
+      remarksHtml+'</div>');
+  });
+  track.innerHTML=cards.join('');
+  startBlogRotation(total);
+}
+
+var blogRotationInterval=null;
+function startBlogRotation(count){
+  if(blogRotationInterval)clearInterval(blogRotationInterval);
+  if(count<2)return;
+  var current=0;
+  blogRotationInterval=setInterval(function(){
+    var glasses=document.querySelectorAll('.blog-glass');
+    if(!glasses.length){clearInterval(blogRotationInterval);blogRotationInterval=null;return}
+    var radius=380;
+    var total=glasses.length;
+    var angleStep=360/total;
+    current=(current+1)%total;
+    glasses.forEach(function(g,idx){
+      var rawIdx=parseInt(g.dataset.idx);
+      var newAngle=(angleStep*((rawIdx-current+total)%total));
+      if(newAngle>180)newAngle-=360;
+      var rad=newAngle*Math.PI/180;
+      var x=Math.sin(rad)*radius;
+      var z=-Math.cos(rad)*radius;
+      var isFront=Math.abs(newAngle)<90||Math.abs(newAngle-360)<90||Math.abs(newAngle+360)<90;
+      g.style.transform='translate3d('+x+'px,'+(-60)+'px,'+z+'px) rotateY('+(-newAngle)+'deg)';
+      g.classList.toggle('face-front',isFront);
+      g.classList.toggle('face-hidden',!isFront);
+      g.style.zIndex=isFront?20:1;
+    });
+  },4000);
+}
+
+function openBlogSubmit(){
+  var u=getCurrentUser();
+  if(!u){openModal('login');return}
+  openModal('blogsubmit');
+}
+
+function renderBlogSubmit(c){
+  c.innerHTML='<h2>'+_t('blog_submit_title')+'</h2><div class="sub">'+_t('blog_submit_sub')+'</div><div class="modal-error" id="blog-submit-error"></div>'+
+    '<div class="modal-field"><label>'+_t('blog_choose_type')+'</label><select id="blog-submit-category">'+
+    '<option value="interviews">'+_t('blog_type_interview')+'</option>'+
+    '<option value="behind_scenes">'+_t('blog_type_behind')+'</option>'+
+    '<option value="design_notes">'+_t('blog_type_design')+'</option>'+
+    '<option value="tips">'+_t('blog_type_tips')+'</option></select></div>'+
+    '<div class="modal-field"><label>'+_t('label_title')+'</label><input type="text" id="blog-submit-title" placeholder="'+_t('placeholder_title')+'"></div>'+
+    '<div class="modal-field"><label>'+_t('blog_write_content')+'</label><textarea id="blog-submit-body" rows="6" style="width:100%;background:rgba(0,0,0,.04);border:1px solid var(--border);padding:12px;font-family:var(--font);font-size:13px;color:var(--text);resize:vertical;outline:none"></textarea></div>'+
+    '<button class="modal-submit" onclick="handleBlogSubmit()">'+_t('modal_submit_btn')+'</button>'+
+    '<div class="modal-switch">'+_t('modal_submit_note')+'</div>';
+}
+
+function handleBlogSubmit(){
+  var u=getCurrentUser();if(!u){closeModal();openModal('login');return}
+  var cat=document.getElementById('blog-submit-category').value;
+  var title=document.getElementById('blog-submit-title').value.trim();
+  var body=document.getElementById('blog-submit-body').value.trim();
+  var e=document.getElementById('blog-submit-error');
+  if(!title){e.textContent=_t('submit_err_title');e.style.display='block';return}
+  var posts=getBlogPosts();
+  posts.unshift({category:cat,title:title,body:body,author:u.displayName||u.username,username:u.username,status:'pending',submitted:new Date().toISOString().split('T')[0],remarks:[]});
+  saveBlogPosts(posts);
+  closeModal();toast(_t('blog_toast_submitted'));
+  if(isAdmin()&&document.getElementById('admin-section').style.display==='block')renderBlogPendingTable();
+}
+
+function editBlogPost(idx){
+  document.getElementById('blog-body-'+idx).style.display='none';
+  document.getElementById('blog-edit-'+idx).style.display='block';
+}
+function cancelBlogEdit(idx){
+  document.getElementById('blog-body-'+idx).style.display='block';
+  document.getElementById('blog-edit-'+idx).style.display='none';
+}
+
+function saveBlogEdit(idx){
+  var posts=getBlogPosts();
+  var approved=posts.filter(function(p){return p.status==='approved'});
+  var ta=document.getElementById('blog-edit-textarea-'+idx);
+  if(!ta||!approved[idx])return;
+  var newBody=ta.value.trim();
+  approved[idx].body=newBody;
+  for(var i=0;i<posts.length;i++){if(posts[i]===approved[idx]){posts[i].body=newBody;break}}
+  saveBlogPosts(posts);
+  cancelBlogEdit(idx);renderBlog();toast(_t('blog_toast_saved'));
+}
+
+function deleteBlogPost(idx){
+  if(!confirm(_t('confirm_delete')))return;
+  var posts=getBlogPosts();
+  var approved=posts.filter(function(p){return p.status==='approved'});
+  if(!approved[idx])return;
+  var masterIdx=posts.indexOf(approved[idx]);
+  if(masterIdx>-1){posts.splice(masterIdx,1);saveBlogPosts(posts)}
+  renderBlog();toast(_t('blog_toast_deleted'));
+}
+
+function renderBlogPendingTable(){
+  var tbody=document.getElementById('blog-pending-body');
+  if(!tbody)return;
+  var posts=getBlogPosts();
+  var pending=posts.filter(function(p){return p.status==='pending'});
+  if(!pending.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:40px;color:rgba(232,229,219,.3)">'+_t('pending_empty')+'</td></tr>';return}
+  tbody.innerHTML=pending.map(function(p,i){
+    var catKey='blog_type_'+p.category;
+    return '<tr><td>'+_t(catKey)+'</td><td>'+escapeHtml(p.title)+'</td><td>'+escapeHtml(p.author)+'</td><td>'+p.submitted+'</td><td>'+
+      '<button onclick="blogApproveItem('+i+')" style="border-color:rgba(100,200,100,.3);color:rgba(144,200,144,.8);margin-right:4px">'+_t('approve_btn')+'</button>'+
+      '<button class="danger" onclick="blogRejectItem('+i+')">'+_t('reject_btn')+'</button></td></tr>'
+  }).join('');
+}
+
+function blogApproveItem(idx){
+  var posts=getBlogPosts();
+  var pending=posts.filter(function(p){return p.status==='pending'});
+  if(!pending[idx])return;
+  var remark=prompt(_t('blog_approve_remark_label')+' ('+_t('blog_approve_remark_placeholder')+')')||'';
+  var masterIdx=posts.indexOf(pending[idx]);
+  if(masterIdx>-1){
+    posts[masterIdx].status='approved';
+    if(remark.trim()){
+      if(!posts[masterIdx].remarks)posts[masterIdx].remarks=[];
+      posts[masterIdx].remarks.push({text:remark.trim(),by:'Admin',date:new Date().toISOString().split('T')[0]});
+    }
+    saveBlogPosts(posts);
+    notifyUser(posts[masterIdx].username,remark.trim()?_t('notif_remark',{title:posts[masterIdx].title,remark:remark.trim()}):_t('notif_approved',{title:posts[masterIdx].title}));
+  }
+  renderBlogPendingTable();renderBlog();toast(_t('toast_approved'))
+}
+
+function blogRejectItem(idx){
+  if(!confirm(_t('confirm_reject')))return;
+  var posts=getBlogPosts();
+  var pending=posts.filter(function(p){return p.status==='pending'});
+  if(!pending[idx])return;
+  var remark=prompt(_t('blog_approve_remark_label')+' ('+_t('blog_approve_remark_placeholder')+')')||'';
+  var masterIdx=posts.indexOf(pending[idx]);
+  if(masterIdx>-1){
+    if(remark.trim()){
+      posts[masterIdx].remarks=[{text:remark.trim(),by:'Admin',date:new Date().toISOString().split('T')[0]}];
+    }
+    posts[masterIdx].status='rejected';
+    notifyUser(posts[masterIdx].username,remark.trim()?_t('notif_remark',{title:posts[masterIdx].title,remark:remark.trim()}):_t('notif_rejected',{title:posts[masterIdx].title}));
+    saveBlogPosts(posts);
+  }
+  renderBlogPendingTable();toast(_t('toast_rejected'))
+}
+
+// ======================== NOTIFICATIONS ========================
+function notifyUser(username,msg){
+  var notifs=JSON.parse(localStorage.getItem('mc_notifs')||'[]');
+  notifs.unshift({username:username,message:msg,date:new Date().toISOString().split('T')[0],read:false});
+  localStorage.setItem('mc_notifs',JSON.stringify(notifs));
+}
+
+function checkNotifs(){
+  var u=getCurrentUser();
+  var bar=document.getElementById('blog-notif-bar');
+  var text=document.getElementById('blog-notif-text');
+  if(!u||!bar||!text)return;
+  var all=JSON.parse(localStorage.getItem('mc_notifs')||'[]');
+  var mine=all.filter(function(n){return n.username===u.username&&!n.read});
+  if(mine.length){text.textContent=mine[0].message;bar.classList.add('show')}
+  else{bar.classList.remove('show')}
+}
+
+function dismissNotif(){
+  var u=getCurrentUser();if(!u)return;
+  var all=JSON.parse(localStorage.getItem('mc_notifs')||'[]');
+  for(var i=0;i<all.length;i++){
+    if(all[i].username===u.username&&!all[i].read){all[i].read=true;localStorage.setItem('mc_notifs',JSON.stringify(all));checkNotifs();return}
+  }
+}
+
+// Patch into admin
+function addBlogAdminTab(){
+  var tabs=document.querySelector('.admin-header .admin-tabs');
+  if(tabs&&!document.querySelector('[data-atab="blog"]')){
+    var btn=document.createElement('button');btn.className='admin-tab';btn.dataset.atab='blog';
+    btn.onclick=function(){switchAdminTab('blog')};
+    btn.innerHTML='<span data-i18n="admin_tab_blog">Blog</span> <span id="blog-pending-count" style="color:rgba(240,200,100,.8)"></span>';
+    tabs.appendChild(btn);
+  }
+  var adminPanel=document.querySelector('.admin-panel');
+  if(adminPanel&&!document.getElementById('admin-blog')){
+    var sec=document.createElement('div');sec.className='admin-section';sec.id='admin-blog';
+    sec.innerHTML='<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th data-i18n="admin_th_type">Category</th><th data-i18n="admin_th_title">Title</th><th data-i18n="admin_th_author">Author</th><th data-i18n="admin_th_date">Submitted</th><th data-i18n="admin_th_actions">Actions</th></tr></thead><tbody id="blog-pending-body"></tbody></table></div>';
+    adminPanel.appendChild(sec);
+  }
+  var bp=document.getElementById('blog-pending-body');
+  if(bp&&bp.children.length===0)renderBlogPendingTable();
+}
+
+;(function(){
+  var _origRefreshUI=refreshUI;
+  refreshUI=function(){_origRefreshUI();addBlogAdminTab();checkNotifs()};
+  var _origApplyLang=applyLang;
+  applyLang=function(){_origApplyLang();addBlogAdminTab()};
+  var _origRenderPending=renderPendingTable;
+  renderPendingTable=function(){_origRenderPending();var posts=getBlogPosts();var pending=posts.filter(function(p){return p.status==='pending'});var pc=document.getElementById('blog-pending-count');if(pc)pc.textContent=pending.length?'('+pending.length+')':'';renderBlogPendingTable()};
+})();
+
 // ======================== UNICORN STUDIO ========================
 (function(){
   function initUS(){
@@ -967,6 +1278,7 @@ function scrollToId(id){var el=document.getElementById(id);if(el)el.scrollIntoVi
 applyLang();
 refreshUI();
 renderGallery();
+  renderBlog();
 </script>
 </body>
 </html>
