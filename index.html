@@ -610,6 +610,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
   .history-modal h3 { font-size: 1.4rem; }
   .history-modal > p { font-size: 0.95rem; }
 }
+.sync-indicator{display:inline-block;width:8px;height:8px;border-radius:50%;transition:background .3s,box-shadow .3s;vertical-align:middle}
+.sync-indicator.online{background:#8fd18f;box-shadow:0 0 6px rgba(143,209,143,.8)}
+.sync-indicator.offline{background:rgba(232,229,219,.25)}
 </style></head>
 <body>
 <div class="pixel-grid"></div>
@@ -626,6 +629,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
     <li><a onclick="scrollToId('join')"><span data-i18n="nav_join">Join</span></a></li>
     <li><button class="lang-btn" id="lang-btn" onclick="toggleLang()">中</button></li>
     <li id="nav-auth"></li>
+    <li><span class="sync-indicator offline" id="sync-indicator" title="Local only"></span></li>
   </ul>
 </nav>
 
@@ -674,20 +678,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
   </div>
 </section>
 
-<!-- Philosophy -->
-<section class="section-dark philosophy">
-  <!-- UnicornStudio 背景图（仅限本页） -->
-  <div class="philosophy-bg-scene">
-    <div
-      data-us-project="xUcs8bEn5yB2Oyyi7mDJ"
-      style="width:1440px;height:900px"
-    ></div>
-  </div>
-  <div class="philosophy-block philosophy-block-1"></div>
-  <div class="philosophy-block philosophy-block-2"></div>
-  <div class="philosophy-text">"We see the <em>image</em> not as a window to the world,<br>but as a <em>surface</em> to be cut, layered, and<br>reassembled into <em>new realities</em>."</div>
-</section>
-
 <!-- Schedule -->
 <section class="section" id="schedule">
   <div class="section-label">/ 002 <span data-i18n="schedule_label">Schedule</span></div>
@@ -718,6 +708,19 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
   </div>
 </section>
 
+<!-- Philosophy -->
+<section class="section-dark philosophy">
+  <!-- UnicornStudio 背景图（仅限本页） -->
+  <div class="philosophy-bg-scene">
+    <div
+      data-us-project="xUcs8bEn5yB2Oyyi7mDJ"
+      style="width:1440px;height:900px"
+    ></div>
+  </div>
+  <div class="philosophy-block philosophy-block-1"></div>
+  <div class="philosophy-block philosophy-block-2"></div>
+  <div class="philosophy-text">"We see the <em>image</em> not as a window to the world,<br>but as a <em>surface</em> to be cut, layered, and<br>reassembled into <em>new realities</em>."</div>
+</section>
 
 <!-- Blog / Creative Writing -->
 <section class="section-dark blog-wrap" id="blog">
@@ -1104,16 +1107,73 @@ function renderSchedule() {
   container.innerHTML = items.join('');
 }
 
+// ======================== CLOUD SYNC ========================
+var SYNC_KEYS = ['mc_users','mc_media','mc_blog','mc_history_cards','mc_notifs'];
+var SERVER_URL = (location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? (location.port && location.protocol !== 'file:' ? '' : 'http://localhost:3000') : '';
+var CLOUD_API = SERVER_URL + '/api/data';
+var cloudSync = {
+  online: false,
+  pushTimer: null,
+  _pulling: false,
+  _pullPromise: null,
+  pull: function(cb){
+    var self = this;
+    self._pulling = true;
+    self._pullPromise = fetch(CLOUD_API).then(function(r){return r.json()}).then(function(data){
+      if(data && typeof data === 'object'){
+        // Server is source of truth: replace local with server data when key exists.
+        // When server lacks a key (fresh DB), keep local data so it gets migrated on push.
+        SYNC_KEYS.forEach(function(k){
+          if(data[k] !== undefined){
+            try{ localStorage.setItem(k, JSON.stringify(data[k])); }catch(e){}
+          }
+        });
+        self.online = true;
+      }
+      self._pulling = false;
+      self.push();
+      self.updateIndicator();
+      if(cb) cb(true);
+    }).catch(function(){
+      self._pulling = false;
+      self.online = false;
+      self.updateIndicator();
+      if(cb) cb(false);
+    });
+    return self._pullPromise;
+  },
+  push: function(){
+    var self = this;
+    if(this.pushTimer) clearTimeout(this.pushTimer);
+    this.pushTimer = setTimeout(function(){
+      var doPush = function(){
+        var payload = {};
+        SYNC_KEYS.forEach(function(k){ var v = localStorage.getItem(k); if(v) payload[k] = JSON.parse(v); });
+        fetch(CLOUD_API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)})
+          .then(function(){ self.online = true; self.updateIndicator(); })
+          .catch(function(){ self.online = false; self.updateIndicator(); });
+      };
+      // Wait for any in-flight pull so we don't overwrite server with stale local data
+      if(self._pulling && self._pullPromise){ self._pullPromise.then(doPush); }
+      else { doPush(); }
+    }, 800);
+  },
+  updateIndicator: function(){
+    var el = document.getElementById('sync-indicator');
+    if(el){ el.className = 'sync-indicator ' + (this.online ? 'online' : 'offline'); }
+  }
+};
+
 // ======================== DATA LAYER ========================
 var DB = {
   getUsers: function(){try{return JSON.parse(localStorage.getItem('mc_users'))||[]}catch(e){return []}},
-  saveUsers: function(u){localStorage.setItem('mc_users',JSON.stringify(u))},
+  saveUsers: function(u){localStorage.setItem('mc_users',JSON.stringify(u));cloudSync.push();},
   getMedia: function(){try{return JSON.parse(localStorage.getItem('mc_media'))||[]}catch(e){return []}},
-  saveMedia: function(m){try{localStorage.setItem('mc_media',JSON.stringify(m));return true}catch(e){console.error('saveMedia error:',e);return false}},
+  saveMedia: function(m){try{localStorage.setItem('mc_media',JSON.stringify(m));cloudSync.push();return true}catch(e){console.error('saveMedia error:',e);return false}},
   getSess: function(){try{return JSON.parse(sessionStorage.getItem('mc_current'))}catch(e){return null}},
   setSess: function(u){if(u)sessionStorage.setItem('mc_current',JSON.stringify(u));else sessionStorage.removeItem('mc_current')},
   getHistoryCards: function(){try{var d=JSON.parse(localStorage.getItem('mc_history_cards'));if(d&&Array.isArray(d)&&d.length>0)return d;return null}catch(e){return null}},
-  saveHistoryCards: function(c){localStorage.setItem('mc_history_cards',JSON.stringify(c))}
+  saveHistoryCards: function(c){localStorage.setItem('mc_history_cards',JSON.stringify(c));cloudSync.push();}
 };
 
 
@@ -1604,7 +1664,7 @@ function scrollToId(id){var el=document.getElementById(id);if(el)el.scrollIntoVi
 
 // ======================== BLOG / CREATIVE WRITING ========================
 function getBlogPosts(){try{return JSON.parse(localStorage.getItem('mc_blog'))||[]}catch(e){return []}}
-function saveBlogPosts(p){localStorage.setItem('mc_blog',JSON.stringify(p))}
+function saveBlogPosts(p){localStorage.setItem('mc_blog',JSON.stringify(p));cloudSync.push();}
 
 var currentBlogFilter = 'all';
 var blogRotationRAF = null;
@@ -1986,10 +2046,23 @@ function dismissNotif(){
   } catch(e) {}
 })();
 
-applyLang();
-refreshUI();
-renderGallery();
-renderBlog();
+// Cloud sync first, then render (so a render error never blocks sync)
+cloudSync.pull(function(){
+  applyLang();
+  refreshUI();
+  renderGallery();
+  renderBlog();
+  if(typeof renderHistoryReact==='function')renderHistoryReact();
+});
+// Periodic background sync (every 30s) to pick up other devices' changes
+setInterval(function(){
+  cloudSync.pull(function(){
+    refreshUI();
+    renderGallery();
+    renderBlog();
+    if(typeof renderHistoryReact==='function')renderHistoryReact();
+  });
+}, 30000);
 </script>
 <!-- React and CardSwap dependencies -->
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
