@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={corePlugins:{preflight:false}};</script>
 <style>
 :root{--bg:#B5C0A0;--bg-alt:#AAB89A;--bg-dark:#2D3329;--text:#3A4038;--text-light:#6B7268;--text-muted:#8B9080;--black:#000000;--white:#F5F2E8;--accent:#E8E5DB;--border:#8B9080;--font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -57,7 +59,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 @keyframes scrollPulse{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(30px);opacity:1}}
 
 /* Section shared */
-.section{position:relative;padding:140px 48px;background:var(--bg);overflow:hidden}
+.section{position:relative;padding:140px 48px;background:var(--bg);overflow:hidden;content-visibility:auto;contain-intrinsic-size:auto 800px}
 .section-dark{background:var(--bg-dark);color:var(--accent)}
 .section-label{font-size:11px;font-weight:400;letter-spacing:.2em;text-transform:uppercase;color:var(--text-muted);margin-bottom:20px}
 .section-title{font-size:clamp(48px,8vw,120px);font-weight:900;line-height:.9;letter-spacing:-.03em;text-transform:uppercase;color:var(--text);margin-bottom:60px;position:relative}
@@ -81,12 +83,33 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .about-content ul li::before{content:'◆';position:absolute;left:0;font-size:8px;top:3px;color:var(--text-muted)}
 
 /* Philosophy */
-.philosophy{padding:180px 48px;position:relative}
+.philosophy{padding:180px 48px;position:relative;content-visibility:auto;contain-intrinsic-size:auto 600px}
 .philosophy-text{font-size:clamp(28px,4.5vw,64px);font-weight:200;line-height:1.3;letter-spacing:-.02em;max-width:1100px;margin:0 auto;position:relative;color:var(--accent)}
 .philosophy-text em{font-style:normal;font-weight:900;color:var(--white)}
 .philosophy-block{position:absolute;width:120px;height:120px;background:rgba(0,0,0,.15);pointer-events:none}
 .philosophy-block-1{bottom:60px;right:60px}
 .philosophy-block-2{top:60px;left:60px;width:48px;height:48px}
+.philosophy-bg-scene{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0.6}
+.philosophy-bg-scene>div{width:1440px!important;height:900px!important;position:absolute;left:50%;top:50%;margin-left:-720px;margin-top:-450px}
+/* Improve animation performance */
+.philosophy-bg-scene, .philosophy-bg-scene>div {
+  will-change: opacity, transform;
+}
+
+/* Mobile portrait adjustments */
+@media (max-width: 768px) {
+  .philosophy-bg-scene>div {
+    width: 100% !important;
+    height: auto !important;
+    left: 0;
+    top: 0;
+    margin: 0;
+    transform: none;
+  }
+  .philosophy-text {
+    font-size: clamp(18px, 5vw, 48px);
+  }
+}
 
 /* Cards & Schedule */
 .info-cards{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:1280px;margin:0 auto 60px}
@@ -207,6 +230,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .blog-bg-scene>div{width:1440px!important;height:900px!important;position:absolute;left:50%;top:50%;margin-left:-720px;margin-top:-450px}
 .blog-bg-scene::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(45,51,41,.95) 0%,rgba(45,51,41,.92) 50%,rgba(45,51,41,.95) 100%);pointer-events:none;z-index:1}
 
+
 .blog-section-wrap{max-width:1280px;margin:0 auto;position:relative;z-index:2}
 .blog-notif-bar{display:none;align-items:center;gap:8px;padding:12px 20px;background:rgba(240,200,100,.08);border:1px solid rgba(240,200,100,.2);margin-bottom:32px;cursor:pointer;transition:background .3s}
 .blog-notif-bar.show{display:flex}
@@ -225,18 +249,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .blog-tab.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--accent)}
 .blog-tab:hover{color:var(--accent)}
 
-/* 3D Cylindrical Frosted Glass Carousel */
-.carousel-stage{position:relative;width:100%;height:520px;overflow:hidden;perspective:1600px;perspective-origin:50% 50%}
-.carousel-ring{position:absolute;left:50%;top:50%;width:0;height:0;transform-style:preserve-3d}
+/* Frosted Glass Card Grid (static, no rotation) */
+.carousel-stage{position:relative;width:100%;min-height:320px;display:flex;align-items:center;justify-content:center;gap:28px;flex-wrap:wrap;padding:20px 0}
+.carousel-ring{display:flex;align-items:stretch;justify-content:center;gap:28px;flex-wrap:wrap;width:100%;max-width:1400px}
 
 .frosted-panel{
-  position:absolute;
-  left:-200px;top:-130px;
-  width:400px;height:260px;
+  position:relative;
+  flex:0 0 auto;
+  width:380px;
+  min-height:280px;
   border-radius:18px;
   cursor:pointer;
-  transform-style:preserve-3d;
-  transition:transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s ease, border-color .25s ease;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1), box-shadow .25s ease, border-color .25s ease;
   /* Frosted glass base */
   background:linear-gradient(135deg,
     rgba(255,255,255,.06) 0%,
@@ -305,6 +329,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .frosted-panel:hover{
   border-color:rgba(255,255,255,.18);
   box-shadow:0 12px 56px rgba(0,0,0,.35),0 4px 16px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.08);
+  transform:translateY(-6px) scale(1.02);
 }
 
 .panel-cat{font-size:10px;letter-spacing:.25em;text-transform:uppercase;font-weight:700;margin-bottom:10px;opacity:.6}
@@ -364,6 +389,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .frosted-panel:hover{
   border-color:rgba(255,255,255,.18);
   box-shadow:0 12px 56px rgba(0,0,0,.35),0 4px 16px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.08);
+  transform:translateY(-6px) scale(1.02);
 }
 
 @media(max-width:900px){
@@ -375,17 +401,206 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
   .hero-sub{left:24px;bottom:24px}.hero-corner{right:24px;bottom:24px;display:none}
   .admin-header{flex-direction:column;align-items:flex-start}
   .about-content{padding:24px}
-  .carousel-stage{height:420px}
-  .frosted-panel{width:340px;height:220px;left:-170px;top:-110px;padding:22px 26px}
+  .carousel-stage{min-height:280px;gap:20px}
+  .frosted-panel{width:340px;min-height:240px;padding:22px 26px}
   .panel-title{font-size:16px}
   .panel-body{font-size:12px}
 }
 @media(max-width:600px){
   .hero-title{font-size:clamp(40px,15vw,72px)}.section-title{font-size:36px}
   .modal{padding:32px 24px}
-  .carousel-stage{height:360px}
-  .frosted-panel{width:280px;height:190px;left:-140px;top:-95px;padding:18px 22px}
+  .carousel-stage{min-height:260px;gap:16px}
+  .frosted-panel{width:280px;min-height:200px;padding:18px 22px}
   .panel-title{font-size:14px}.panel-body{font-size:11px}
+}
+/* ---- Our History custom styles ---- */
+#history { padding: 140px 48px; background: var(--bg-dark) !important; color: var(--accent); }
+#history .section-label { color: rgba(232,229,219,0.45); }
+.card-swap {
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: flex-start;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.card-swap:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 12px rgba(0,0,0,0.2);
+}
+.card-content { margin-left: 12px; }
+.card-content .title { font-weight:600; font-size:1.1rem; }
+.card-content .date { font-size:0.9rem; color: var(--text-muted); margin-bottom:4px; }
+.card-content .desc { font-size:0.95rem; }
+.admin-panel { margin-top: 24px; padding: 12px; border: 1px solid var(--border); background: rgba(0,0,0,0.05); }
+.admin-panel .input, .admin-panel select, .admin-panel textarea { width: 100%; margin: 4px 0; padding: 6px; }
+.admin-panel .btn { background: var(--accent); color: #000; padding: 8px 12px; border: none; cursor: pointer; }
+</style>
+<style>
+/* Adjust CardSwap container for the history section */
+/* CardSwap container – responsive spacing */
+.card-swap-container { position: relative; bottom: auto; right: auto; transform: none; margin-top: 24px; contain: layout style; }
+
+/* dot for stage indicator */
+.dot { display:inline-block; width:12px; height:12px; border-radius:50%; margin-right:8px; }
+
+/* ---------- CardSwap history card styles ---------- */
+.history-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(245, 242, 232, 0.92);
+  padding: 32px;
+  box-sizing: border-box;
+  transform-style: preserve-3d;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+.history-card:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+}
+.history-card h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+.history-card p {
+  font-size: 0.98rem;
+  line-height: 1.5;
+  opacity: 0.85;
+  color: var(--text-light);
+}
+.history-card-static {
+  background: rgba(245, 242, 232, 0.92);
+  border: 1px solid rgba(232, 229, 219, 0.35);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.history-card-static:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.14);
+  transform: translateY(-2px);
+}
+.history-card-static h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+.history-card-static p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-light);
+}
+
+/* History card detail modal */
+.history-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.25s ease;
+}
+.history-modal {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 540px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.3);
+  animation: modalElasticIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center center;
+  will-change: transform, opacity;
+}
+@keyframes modalElasticIn {
+  0%   { opacity: 0; transform: translateY(40px) scale(0.82); }
+  35%  { opacity: 1; transform: translateY(-12px) scale(1.06); }
+  55%  { transform: translateY(6px) scale(0.97); }
+  75%  { transform: translateY(-3px) scale(1.02); }
+  90%  { transform: translateY(1px) scale(0.998); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.history-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.history-modal-close:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+.history-modal h3 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+  color: var(--text);
+  padding-right: 40px;
+}
+.history-modal > p {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: var(--text-light);
+  margin-bottom: 24px;
+}
+.history-modal-alt {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding-top: 20px;
+  margin-top: 8px;
+}
+.history-modal-alt span {
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 6px;
+}
+.history-modal-alt strong {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+  display: block;
+  margin-bottom: 8px;
+}
+.history-modal-alt p {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--text-light);
+}
+@media (max-width: 640px) {
+  .card-swap-container { width: 100% !important; height: 260px !important; }
+  .history-card { width: 100% !important; height: 220px !important; }
+  .history-modal { padding: 28px 20px; }
+  .history-modal h3 { font-size: 1.4rem; }
+  .history-modal > p { font-size: 0.95rem; }
 }
 </style></head>
 <body>
@@ -399,6 +614,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
     <li class="nav-hide"><a onclick="scrollToId('schedule')"><span data-i18n="nav_schedule">Schedule</span></a></li>
     <li class="nav-hide"><a onclick="scrollToId('gallery')"><span data-i18n="nav_gallery">Gallery</span></a></li>
     <li class="nav-hide"><a onclick="scrollToId('blog')"><span data-i18n="nav_blog">Blog</span></a></li>
+    <li class="nav-hide"><a onclick="scrollToId('history')"><span data-i18n="nav_history">History</span></a></li>
     <li><a onclick="scrollToId('join')"><span data-i18n="nav_join">Join</span></a></li>
     <li><button class="lang-btn" id="lang-btn" onclick="toggleLang()">中</button></li>
     <li id="nav-auth"></li>
@@ -411,10 +627,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
     <div style="width:100%;height:100%" data-us-project="w0B6uPgEbSsnIUAgNwwh"></div>
   </div>
   <div class="hero-overlay"><h1 class="hero-title"><span class="line line-1">MEDIA</span><span class="line line-2">CLUB</span></h1></div>
-  <div class="hero-sub">Est. 2025</div>
-  <div class="hero-corner"><span data-i18n="hero_loc">Beijing / College of Arts</span></div>
   <div class="scroll-indicator"></div>
 </section>
+
 
 <!-- About with UnicornStudio scene -->
 <section class="section about-wrap" id="intro">
@@ -440,8 +655,26 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
   </div>
 </section>
 
+<!-- Our History (使用 CardSwap 样式的时间线) -->
+<section class="section section-dark" id="history">
+  <div class="section-label" style="position:relative;z-index:2">/ 001 <span data-i18n="history_label">Our History</span></div>
+  <div class="container" style="max-width:960px;margin:40px auto;padding:0 20px;">
+    <div id="timeline-container">
+      <!-- 卡片将在此渲染 -->
+      <div id="history-root"></div>
+    </div>
+  </div>
+</section>
+
 <!-- Philosophy -->
 <section class="section-dark philosophy">
+  <!-- UnicornStudio 背景图（仅限本页） -->
+  <div class="philosophy-bg-scene">
+    <div
+      data-us-project="xUcs8bEn5yB2Oyyi7mDJ"
+      style="width:1440px;height:900px"
+    ></div>
+  </div>
   <div class="philosophy-block philosophy-block-1"></div>
   <div class="philosophy-block philosophy-block-2"></div>
   <div class="philosophy-text">"We see the <em>image</em> not as a window to the world,<br>but as a <em>surface</em> to be cut, layered, and<br>reassembled into <em>new realities</em>."</div>
@@ -512,6 +745,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         <button class="admin-tab" data-atab="pending" onclick="switchAdminTab('pending')"><span data-i18n="admin_tab_pending">Pending</span> <span id="pending-count" style="color:rgba(240,200,100,.8)"></span></button>
         <button class="admin-tab" data-atab="blog" onclick="switchAdminTab('blog')"><span data-i18n="admin_tab_blog">Blog</span> <span id="blog-pending-count" style="color:rgba(240,200,100,.8)"></span></button>
         <button class="admin-tab" data-atab="manage" onclick="switchAdminTab('manage')"><span data-i18n="admin_tab_members">Members</span></button>
+        <button class="admin-tab" data-atab="history" onclick="switchAdminTab('history')"><span data-i18n="admin_tab_history">History</span></button>
       </div>
     </div>
 
@@ -562,6 +796,32 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         <table class="admin-table">
           <thead><tr><th data-i18n="admin_th_user">Username</th><th data-i18n="admin_th_role">Role</th><th data-i18n="admin_th_joined">Joined</th><th data-i18n="admin_th_actions">Actions</th></tr></thead>
           <tbody id="users-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- History Cards Management -->
+    <div class="admin-section" id="admin-history">
+      <!-- Add new card form -->
+      <div class="admin-card" style="margin-bottom:24px">
+        <h4 data-i18n="admin_history_add">Add New Card</h4>
+        <div class="admin-upload-grid" style="grid-template-columns:1fr 1fr">
+          <div>
+            <input type="text" id="hist-en-title" placeholder="EN Title" style="width:100%;padding:10px;border:1px solid rgba(232,229,219,.15);background:transparent;color:var(--accent);font-family:var(--font);font-size:13px;outline:none;margin-bottom:8px">
+            <textarea id="hist-en-desc" placeholder="EN Description" rows="3" style="width:100%;padding:10px;border:1px solid rgba(232,229,219,.15);background:transparent;color:var(--accent);font-family:var(--font);font-size:13px;outline:none;resize:vertical"></textarea>
+          </div>
+          <div>
+            <input type="text" id="hist-zh-title" placeholder="中文标题" style="width:100%;padding:10px;border:1px solid rgba(232,229,219,.15);background:transparent;color:var(--accent);font-family:var(--font);font-size:13px;outline:none;margin-bottom:8px">
+            <textarea id="hist-zh-desc" placeholder="中文描述" rows="3" style="width:100%;padding:10px;border:1px solid rgba(232,229,219,.15);background:transparent;color:var(--accent);font-family:var(--font);font-size:13px;outline:none;resize:vertical"></textarea>
+          </div>
+        </div>
+        <button class="join-btn" style="width:100%;justify-content:center;margin-top:12px" onclick="adminAddHistoryCard()"><span data-i18n="admin_history_add_btn">Add Card</span></button>
+      </div>
+      <!-- Existing cards table -->
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th data-i18n="admin_history_th_en">EN Title</th><th data-i18n="admin_history_th_zh">中文标题</th><th data-i18n="admin_th_actions">Actions</th></tr></thead>
+          <tbody id="history-table-body"></tbody>
         </table>
       </div>
     </div>
@@ -616,7 +876,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 var LANG_DATA = {
   en: {
     page_title: 'Media Club',
-    nav_about: 'About', nav_schedule: 'Schedule', nav_gallery: 'Gallery', nav_blog: 'Blog', nav_join: 'Join',
+    nav_about: 'About', nav_schedule: 'Schedule', nav_gallery: 'Gallery', nav_blog: 'Blog', nav_join: 'Join', nav_history: 'History',
     hero_loc: 'Beijing / College of Arts',
     about_label: 'About', about_title: 'About Us',
     about_mission_h: 'Our Mission',
@@ -639,7 +899,7 @@ var LANG_DATA = {
     card_3_title: 'Design Commissions', card_3_desc: 'Build a portfolio of design samples and gradually take on external commercial orders. All income funds club operations and public-interest projects.',
     card_4_title: 'Documentary', card_4_desc: 'One documentary per semester: select a topic, prepare, and deliver a complete film by semester’s end.',
     gallery_label: 'Gallery', gallery_title: 'Public Gallery', gallery_submit: '+ Submit',
-    join_label: 'Join', join_text: 'Media Club is open to all — photographers, visual artists, programmers, writers. Register with the club invitation code to join our creative collective.', join_btn: 'Register Now',
+    join_label: 'Join', history_label: 'Our History', join_text: 'Media Club is open to all — photographers, visual artists, programmers, writers. Register with the club invitation code to join our creative collective.', join_btn: 'Register Now',
     blog_label: 'Creative Writing', blog_title: 'BLOG',
     blog_submit: '+ Write',
     blog_type_interview: 'Interviews', blog_type_behind: 'Behind the Scenes', blog_type_design: 'Design Notes', blog_type_tips: 'Tips & Tricks',
@@ -659,9 +919,10 @@ var LANG_DATA = {
     blog_toast_saved: 'Blog post updated!',
     blog_toast_deleted: 'Blog post deleted.',
     blog_remarks_label: 'Admin Remarks:',
-    admin_title: 'Admin Dashboard', admin_tab_publish: 'Publish', admin_tab_pending: 'Pending', admin_tab_blog: 'Blog', admin_tab_members: 'Members',
+    admin_title: 'Admin Dashboard', admin_tab_publish: 'Publish', admin_tab_pending: 'Pending', admin_tab_blog: 'Blog', admin_tab_members: 'Members', admin_tab_history: 'History',
     admin_pub_video: 'Publish Video', admin_pub_design: 'Publish Design', admin_publish_btn: 'Publish', admin_select_img: 'Click to select image',
     admin_th_type: 'Type', admin_th_title: 'Title', admin_th_author: 'Author', admin_th_date: 'Submitted', admin_th_actions: 'Actions', admin_th_user: 'Username', admin_th_role: 'Role', admin_th_joined: 'Joined',
+    admin_history_add: 'Add New Card', admin_history_edit: 'Edit', admin_history_en_title: 'EN Title', admin_history_en_desc: 'EN Description', admin_history_zh_title: '中文标题', admin_history_zh_desc: '中文描述', admin_history_add_btn: 'Add Card', admin_history_save_btn: 'Save', admin_history_cancel_btn: 'Cancel', admin_history_empty: 'No history cards yet.', admin_history_th_en: 'EN Title', admin_history_th_zh: '中文标题', admin_history_toast_added: 'Card added!', admin_history_toast_saved: 'Card updated!', admin_history_toast_deleted: 'Card deleted.', admin_history_confirm_delete: 'Delete this card?',
     modal_login_title: 'Login', modal_login_sub: 'Sign in to your account', modal_login_btn: 'Sign In', modal_login_switch: 'No account?',
     modal_register_title: 'Register', modal_register_sub: 'Join with your invitation code', modal_register_btn: 'Create Account', modal_register_switch: 'Already registered?',
     modal_profile_title: 'Profile', modal_profile_save: 'Save Changes',
@@ -674,7 +935,7 @@ var LANG_DATA = {
     login_err_empty: 'Please fill in all fields.', login_err_invalid: 'Invalid username or password.',
     register_err_empty: 'Please fill in all fields.', register_err_code: 'Invalid club invitation code.', register_err_user: 'Username must be at least 3 characters.', register_err_pass: 'Password must be at least 4 characters.', register_err_taken: 'Username already taken.',
     submit_err_title: 'Please enter a title.', submit_err_url: 'Please enter a video URL.', submit_err_file: 'Please select an image.',
-    toast_welcome: 'Welcome back, {name}!', toast_register: 'Welcome to Media Club, {name}!', toast_logout: 'Logged out.', toast_updated: 'Profile updated!', toast_deleted: 'Deleted.', toast_approved: 'Approved!', toast_rejected: 'Rejected.', toast_published: 'Published: {title}', toast_selected: 'Selected: {name}', toast_submitted: 'Submitted for review!', toast_nouser: 'User not found.',
+    toast_welcome: 'Welcome back, {name}!', toast_register: 'Welcome to Media Club, {name}!', toast_logout: 'Logged out.', toast_updated: 'Profile updated!', toast_deleted: 'Deleted.', toast_approved: 'Approved!', toast_rejected: 'Rejected.', toast_published: 'Published: {title}', toast_selected: 'Selected: {name}', toast_submitted: 'Submitted for review!', toast_nouser: 'User not found.', toast_storage_full: 'Storage full! Please try a smaller image.', toast_save_failed: 'Failed to save. Please try again.',
     confirm_delete: 'Delete this item?', confirm_reject: 'Reject this submission?', confirm_deluser: 'Delete user \"{name}\"? This cannot be undone.',
     approve_btn: 'Approve', reject_btn: 'Reject', delete_btn: 'Delete',
     logout: 'Logout', profile: 'Profile', submit_work: 'Submit Work',
@@ -682,7 +943,7 @@ var LANG_DATA = {
   },
   zh: {
     page_title: 'Media Club — 媒介社',
-    nav_about: '社团介绍', nav_schedule: '日程', nav_gallery: '作品', nav_blog: '随笔', nav_join: '加入',
+    nav_about: '社团介绍', nav_schedule: '日程', nav_gallery: '作品', nav_blog: '随笔', nav_join: '加入', nav_history: '历史',
     hero_loc: '北京 / 艺术学院',
     about_label: '社团介绍', about_title: '媒介社',
     about_mission_h: '社团宗旨',
@@ -705,7 +966,7 @@ var LANG_DATA = {
     card_3_title: '平面设计商单', card_3_desc: '积累设计样稿，循序渐进对接外部商单。收入全部充当社团经费与公益开支。',
     card_4_title: '纪实短片创作', card_4_desc: '每学期完成一部纪实短片，确定选题后启动筹备，学期末产出完整作品。',
     gallery_label: '作品', gallery_title: '公开发布', gallery_submit: '+ 投稿',
-    join_label: '加入', join_text: 'Media Club 欢迎所有人——摄影师、视觉艺术家、程序员、写作者。使用邀请码注册，加入我们的创作集体。', join_btn: '立即注册',
+    join_label: '加入', history_label: '历史', join_text: 'Media Club 欢迎所有人——摄影师、视觉艺术家、程序员、写作者。使用邀请码注册，加入我们的创作集体。', join_btn: '立即注册',
     blog_label: '创作随笔', blog_title: 'BLOG',
     blog_submit: '+ 投稿',
     blog_type_interview: '访谈文稿', blog_type_behind: '幕后纪实', blog_type_design: '设计心得', blog_type_tips: '拍摄技巧',
@@ -725,9 +986,10 @@ var LANG_DATA = {
     blog_toast_saved: '随笔已更新！',
     blog_toast_deleted: '随笔已删除。',
     blog_remarks_label: '管理员备注：',
-    admin_title: '管理后台', admin_tab_publish: '发布', admin_tab_pending: '待审核', admin_tab_blog: '随笔', admin_tab_members: '成员',
+    admin_title: '管理后台', admin_tab_publish: '发布', admin_tab_pending: '待审核', admin_tab_blog: '随笔', admin_tab_members: '成员', admin_tab_history: '历史',
     admin_pub_video: '发布视频', admin_pub_design: '发布设计', admin_publish_btn: '发布', admin_select_img: '点击选择图片',
     admin_th_type: '类型', admin_th_title: '标题', admin_th_author: '作者', admin_th_date: '提交时间', admin_th_actions: '操作', admin_th_user: '用户名', admin_th_role: '身份', admin_th_joined: '加入时间',
+    admin_history_add: '添加新卡片', admin_history_edit: '编辑', admin_history_en_title: '英文标题', admin_history_en_desc: '英文描述', admin_history_zh_title: '中文标题', admin_history_zh_desc: '中文描述', admin_history_add_btn: '添加卡片', admin_history_save_btn: '保存', admin_history_cancel_btn: '取消', admin_history_empty: '暂无历史卡片。', admin_history_th_en: '英文标题', admin_history_th_zh: '中文标题', admin_history_toast_added: '卡片已添加！', admin_history_toast_saved: '卡片已更新！', admin_history_toast_deleted: '卡片已删除。', admin_history_confirm_delete: '删除此卡片？',
     modal_login_title: '登录', modal_login_sub: '登录你的账号', modal_login_btn: '登录', modal_login_switch: '还没有账号？',
     modal_register_title: '注册', modal_register_sub: '使用邀请码加入', modal_register_btn: '创建账号', modal_register_switch: '已有账号？',
     modal_profile_title: '个人资料', modal_profile_save: '保存修改',
@@ -740,7 +1002,7 @@ var LANG_DATA = {
     login_err_empty: '请填写所有字段。', login_err_invalid: '用户名或密码错误。',
     register_err_empty: '请填写所有字段。', register_err_code: '社团邀请码错误。', register_err_user: '用户名至少3个字符。', register_err_pass: '密码至少4位字符。', register_err_taken: '用户名已被占用。',
     submit_err_title: '请输入标题。', submit_err_url: '请输入视频链接。', submit_err_file: '请选择图片。',
-    toast_welcome: '欢迎回来，{name}！', toast_register: '欢迎加入 Media Club，{name}！', toast_logout: '已退出。', toast_updated: '资料已更新！', toast_deleted: '已删除。', toast_approved: '已批准！', toast_rejected: '已拒绝。', toast_published: '已发布：{title}', toast_selected: '已选择：{name}', toast_submitted: '已提交审核！', toast_nouser: '用户不存在。',
+    toast_welcome: '欢迎回来，{name}！', toast_register: '欢迎加入 Media Club，{name}！', toast_logout: '已退出。', toast_updated: '资料已更新！', toast_deleted: '已删除。', toast_approved: '已批准！', toast_rejected: '已拒绝。', toast_published: '已发布：{title}', toast_selected: '已选择：{name}', toast_submitted: '已提交审核！', toast_nouser: '用户不存在。', toast_storage_full: '存储空间已满！请使用更小的图片。', toast_save_failed: '保存失败，请重试。',
     confirm_delete: '删除此作品？', confirm_reject: '拒绝此投稿？', confirm_deluser: '删除用户"{name}"？此操作不可撤销。',
     approve_btn: '批准', reject_btn: '拒绝', delete_btn: '删除',
     logout: '退出登录', profile: '个人资料', submit_work: '投稿作品',
@@ -790,7 +1052,10 @@ function applyLang() {
     renderPendingTable();
     renderBlogPendingTable();
     renderUsersTable();
+    renderHistoryTable();
   }
+  // Re-render Our History React component (if available)
+  if (typeof renderHistoryReact === 'function') renderHistoryReact();
   // Re-render open modals
   var modalBody = document.getElementById('modal-body');
   if (modalBody && modalBody.children.length > 0) {
@@ -834,9 +1099,11 @@ var DB = {
   getUsers: function(){try{return JSON.parse(localStorage.getItem('mc_users'))||[]}catch(e){return []}},
   saveUsers: function(u){localStorage.setItem('mc_users',JSON.stringify(u))},
   getMedia: function(){try{return JSON.parse(localStorage.getItem('mc_media'))||[]}catch(e){return []}},
-  saveMedia: function(m){localStorage.setItem('mc_media',JSON.stringify(m))},
+  saveMedia: function(m){try{localStorage.setItem('mc_media',JSON.stringify(m));return true}catch(e){console.error('saveMedia error:',e);return false}},
   getSess: function(){try{return JSON.parse(sessionStorage.getItem('mc_current'))}catch(e){return null}},
-  setSess: function(u){if(u)sessionStorage.setItem('mc_current',JSON.stringify(u));else sessionStorage.removeItem('mc_current')}
+  setSess: function(u){if(u)sessionStorage.setItem('mc_current',JSON.stringify(u));else sessionStorage.removeItem('mc_current')},
+  getHistoryCards: function(){try{var d=JSON.parse(localStorage.getItem('mc_history_cards'));if(d&&Array.isArray(d)&&d.length>0)return d;return null}catch(e){return null}},
+  saveHistoryCards: function(c){localStorage.setItem('mc_history_cards',JSON.stringify(c))}
 };
 
 
@@ -942,6 +1209,22 @@ function saveProfile(){
   closeModal();refreshUI();toast(_t('toast_updated'));
 }
 
+// Compress image data URL to fit localStorage constraints
+function compressImage(dataUrl, maxWidth, quality, callback){
+  var img = new Image();
+  img.onload = function(){
+    var canvas = document.createElement('canvas');
+    var w = img.width, h = img.height;
+    if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+    canvas.width = w; canvas.height = h;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, w, h);
+    callback(canvas.toDataURL('image/jpeg', quality || 0.82));
+  };
+  img.onerror = function(){ callback(dataUrl); };
+  img.src = dataUrl;
+}
+
 function openSubmitModal(){
   var u=getCurrentUser();if(!u){openModal('login');return}
   openModal('submit');
@@ -974,18 +1257,25 @@ function handleSubmit(){
     var url=document.getElementById('submit-url').value.trim();
     if(!url){e.textContent=_t('submit_err_url');e.style.display='block';return}
     data.url=url;data.embedUrl=getEmbedUrl(url);
-    var media=DB.getMedia();media.unshift(data);DB.saveMedia(media);
+    var media=DB.getMedia();media.unshift(data);
+    if(!DB.saveMedia(media)){toast(_t('toast_storage_full'));return}
     closeModal();toast(_t('toast_submitted'));
+    renderGallery();
     if(isAdmin()&&document.getElementById('admin-section').style.display==='block')renderPendingTable();
   } else {
     var file=document.getElementById('submit-file').files[0];
     if(!file){e.textContent=_t('submit_err_file');e.style.display='block';return}
     var reader=new FileReader();
     reader.onload=function(ev){
-      data.url=ev.target.result;
-      var media=DB.getMedia();media.unshift(data);DB.saveMedia(media);
-      closeModal();toast(_t('toast_submitted'));
-      if(isAdmin()&&document.getElementById('admin-section').style.display==='block')renderPendingTable();
+      // Compress image before storing to avoid localStorage quota issues
+      compressImage(ev.target.result, 1200, 0.82, function(compressedUrl){
+        data.url=compressedUrl;
+        var media=DB.getMedia();media.unshift(data);
+        if(!DB.saveMedia(media)){toast(_t('toast_storage_full'));return}
+        closeModal();toast(_t('toast_submitted'));
+        renderGallery();
+        if(isAdmin()&&document.getElementById('admin-section').style.display==='block')renderPendingTable();
+      });
     };
     reader.readAsDataURL(file);
   }
@@ -1051,13 +1341,13 @@ function deleteMediaItem(idx){
   var media=DB.getMedia();
   var items=media.filter(function(m){return m.type===currentGalleryTab&&m.status!=='rejected'&&(m.status==='approved'||!m.status)});
   var item=items[idx];var ri=media.findIndex(function(m){return m===item});
-  if(ri>-1){media.splice(ri,1);DB.saveMedia(media);renderGallery();toast(_t('toast_deleted'))}
+  if(ri>-1){media.splice(ri,1);if(!DB.saveMedia(media)){toast(_t('toast_save_failed'));return}renderGallery();toast(_t('toast_deleted'))}
 }
 
 // ======================== ADMIN ========================
 function toggleAdmin(show){
   var sec=document.getElementById('admin-section');
-  if(show){sec.style.display='block';renderPendingTable();renderBlogPendingTable();renderUsersTable()}
+  if(show){sec.style.display='block';renderPendingTable();renderBlogPendingTable();renderUsersTable();renderHistoryTable()}
   else sec.style.display='none'
 }
 
@@ -1084,7 +1374,7 @@ function renderPendingTable(){
 function approveItem(idx){
   var media=DB.getMedia();
   var pending=media.filter(function(m){return m.status==='pending'});
-  if(pending[idx]){pending[idx].status='approved';DB.saveMedia(media)}
+  if(pending[idx]){pending[idx].status='approved';if(!DB.saveMedia(media)){toast(_t('toast_save_failed'));return}}
   renderPendingTable();renderGallery();toast(_t('toast_approved'))
 }
 
@@ -1092,7 +1382,7 @@ function rejectItem(idx){
   if(!confirm(_t('confirm_reject')))return;
   var media=DB.getMedia();
   var pending=media.filter(function(m){return m.status==='pending'});
-  if(pending[idx]){pending[idx].status='rejected';DB.saveMedia(media)}
+  if(pending[idx]){pending[idx].status='rejected';if(!DB.saveMedia(media)){toast(_t('toast_save_failed'));return}}
   renderPendingTable();toast(_t('toast_rejected'))
 }
 
@@ -1119,9 +1409,15 @@ var pendingDesignData=null;
 
 function handleDesignSelect(e){
   var file=e.target.files[0];if(!file)return;
-  if(file.size>5*1024*1024){toast('File too large. Max 5MB.');return}
+  if(file.size>10*1024*1024){toast('File too large. Max 10MB.');return}
   var r=new FileReader();
-  r.onload=function(ev){pendingDesignData=ev.target.result;toast(_t('toast_selected',{name:file.name}))};
+  r.onload=function(ev){
+    // Pre-compress to keep memory low before storing
+    compressImage(ev.target.result, 1200, 0.82, function(compressed){
+      pendingDesignData=compressed;
+      toast(_t('toast_selected',{name:file.name}));
+    });
+  };
   r.readAsDataURL(file)
 }
 
@@ -1131,7 +1427,7 @@ function adminPublishVideo(){
   if(!url||!title){toast('Please enter URL and title.');return}
   var media=DB.getMedia();
   media.unshift({type:'videos',url:url,title:title,embedUrl:getEmbedUrl(url),author:'Admin',status:'approved',submitted:new Date().toISOString().split('T')[0]});
-  DB.saveMedia(media);
+  if(!DB.saveMedia(media)){toast(_t('toast_storage_full'));return}
   document.getElementById('video-url-input').value='';document.getElementById('video-title-input').value='';
   renderGallery();toast(_t('toast_published',{title:title}))
 }
@@ -1140,11 +1436,121 @@ function adminPublishDesign(){
   var title=document.getElementById('design-title-input').value.trim();
   if(!pendingDesignData){toast('Please select an image.');return}
   if(!title){toast('Please enter a title.');return}
+  // pendingDesignData is already compressed in handleDesignSelect
   var media=DB.getMedia();
   media.unshift({type:'designs',url:pendingDesignData,title:title,author:'Admin',status:'approved',submitted:new Date().toISOString().split('T')[0]});
-  DB.saveMedia(media);
+  if(!DB.saveMedia(media)){toast(_t('toast_storage_full'));return}
   document.getElementById('design-title-input').value='';document.getElementById('design-file-input').value='';
   pendingDesignData=null;renderGallery();toast(_t('toast_published',{title:title}))
+}
+
+// ======================== HISTORY CARDS ADMIN ========================
+var DEFAULT_HISTORY_CARDS = [
+  { zh: { title: "创立之初", desc: "2020年，我们怀揣共享知识的初心，组建了最初的互助学习团队。" }, en: { title: "Our Beginning", desc: "In 2020, we started with the vision of sharing knowledge, building our first peer learning team." } },
+  { zh: { title: "快速成长", desc: "2022年，成员规模突破百人，覆盖多学科领域，帮助数百位同学提升成绩。" }, en: { title: "Rapid Growth", desc: "In 2022, we grew to over 100 members across multiple subjects, helping hundreds of students improve." } },
+  { zh: { title: "全新阶段", desc: "2024年，正式升级为公益学习社区，开启线上线下结合的多元化服务。" }, en: { title: "New Chapter", desc: "In 2024, we officially became a non-profit learning community with hybrid online and offline services." } }
+];
+
+function getHistoryCards(){
+  var stored = DB.getHistoryCards();
+  if (stored && Array.isArray(stored) && stored.length > 0) return stored;
+  return DEFAULT_HISTORY_CARDS;
+}
+
+function renderHistoryTable(){
+  var tbody = document.getElementById('history-table-body');
+  if(!tbody) return;
+  var cards = getHistoryCards();
+  if(!cards.length){
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:24px;opacity:.5">' + _t('admin_history_empty') + '</td></tr>';
+    return;
+  }
+  tbody.innerHTML = cards.map(function(c, i){
+    var enT = (c.en&&c.en.title) ? c.en.title : '';
+    var zhT = (c.zh&&c.zh.title) ? c.zh.title : '';
+    return '<tr id="hist-row-'+i+'">'+
+      '<td data-mode="view">' + (i+1) + '. ' + enT.replace(/</g,'&lt;') + '</td>' +
+      '<td>' + zhT.replace(/</g,'&lt;') + '</td>' +
+      '<td>' +
+        '<button class="admin-action-btn" onclick="adminEditHistoryCard('+i+')" style="background:none;border:1px solid rgba(232,229,219,.2);color:var(--accent);padding:4px 10px;font-family:var(--font);font-size:11px;cursor:pointer;margin-right:6px">' + _t('admin_history_edit') + '</button>' +
+        '<button class="admin-action-btn" onclick="adminDeleteHistoryCard('+i+')" style="background:none;border:1px solid rgba(232,229,219,.2);color:rgba(255,100,100,.7);padding:4px 10px;font-family:var(--font);font-size:11px;cursor:pointer">&times;</button>' +
+      '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function adminAddHistoryCard(){
+  var enT = document.getElementById('hist-en-title').value.trim();
+  var enD = document.getElementById('hist-en-desc').value.trim();
+  var zhT = document.getElementById('hist-zh-title').value.trim();
+  var zhD = document.getElementById('hist-zh-desc').value.trim();
+  if(!enT && !zhT){ toast(currentLang==='zh' ? '请至少输入一个标题' : 'Please enter at least one title'); return; }
+  var cards = getHistoryCards();
+  cards.push({
+    en: { title: enT || zhT, desc: enD || zhD || '' },
+    zh: { title: zhT || enT, desc: zhD || enD || '' }
+  });
+  DB.saveHistoryCards(cards);
+  document.getElementById('hist-en-title').value = '';
+  document.getElementById('hist-en-desc').value = '';
+  document.getElementById('hist-zh-title').value = '';
+  document.getElementById('hist-zh-desc').value = '';
+  renderHistoryTable();
+  renderHistoryReact();
+  toast(_t('admin_history_toast_added'));
+}
+
+function adminDeleteHistoryCard(idx){
+  if(!confirm(_t('admin_history_confirm_delete'))) return;
+  var cards = getHistoryCards();
+  cards.splice(idx, 1);
+  DB.saveHistoryCards(cards);
+  renderHistoryTable();
+  renderHistoryReact();
+  toast(_t('admin_history_toast_deleted'));
+}
+
+function adminEditHistoryCard(idx){
+  var row = document.getElementById('hist-row-' + idx);
+  if(!row) return;
+  var cards = getHistoryCards();
+  var c = cards[idx];
+  if(!c) return;
+  var enT = (c.en&&c.en.title) ? c.en.title : '';
+  var enD = (c.en&&c.en.desc) ? c.en.desc : '';
+  var zhT = (c.zh&&c.zh.title) ? c.zh.title : '';
+  var zhD = (c.zh&&c.zh.desc) ? c.zh.desc : '';
+  row.innerHTML =
+    '<td colspan="3" style="padding:16px">' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px">' +
+        '<div>' +
+          '<input type="text" id="edit-en-title-'+idx+'" value="'+enT.replace(/"/g,'&quot;')+'" placeholder="'+_t('admin_history_en_title')+'" style="width:100%;padding:8px;border:1px solid rgba(232,229,219,.15);background:transparent;color:var(--accent);font-family:var(--font);font-size:13px;outline:none;margin-bottom:6px">' +
+          '<textarea id="edit-en-desc-'+idx+'" placeholder="'+_t('admin_history_en_desc')+'" rows="2" style="width:100%;padding:8px;border:1px solid rgba(232,229,219,.15);background:transparent;color:var(--accent);font-family:var(--font);font-size:13px;outline:none;resize:vertical">'+enD.replace(/</g,'&lt;')+'</textarea>' +
+        '</div>' +
+        '<div>' +
+          '<input type="text" id="edit-zh-title-'+idx+'" value="'+zhT.replace(/"/g,'&quot;')+'" placeholder="'+_t('admin_history_zh_title')+'" style="width:100%;padding:8px;border:1px solid rgba(232,229,219,.15);background:transparent;color:var(--accent);font-family:var(--font);font-size:13px;outline:none;margin-bottom:6px">' +
+          '<textarea id="edit-zh-desc-'+idx+'" placeholder="'+_t('admin_history_zh_desc')+'" rows="2" style="width:100%;padding:8px;border:1px solid rgba(232,229,219,.15);background:transparent;color:var(--accent);font-family:var(--font);font-size:13px;outline:none;resize:vertical">'+zhD.replace(/</g,'&lt;')+'</textarea>' +
+        '</div>' +
+      '</div>' +
+      '<button class="join-btn" style="margin-right:8px" onclick="adminSaveHistoryCard('+idx+')"><span>'+_t('admin_history_save_btn')+'</span></button>' +
+      '<button class="join-btn" style="opacity:.6" onclick="renderHistoryTable()"><span>'+_t('admin_history_cancel_btn')+'</span></button>' +
+    '</td>';
+}
+
+function adminSaveHistoryCard(idx){
+  var enT = document.getElementById('edit-en-title-'+idx).value.trim();
+  var enD = document.getElementById('edit-en-desc-'+idx).value.trim();
+  var zhT = document.getElementById('edit-zh-title-'+idx).value.trim();
+  var zhD = document.getElementById('edit-zh-desc-'+idx).value.trim();
+  var cards = getHistoryCards();
+  cards[idx] = {
+    en: { title: enT || zhT, desc: enD || zhD || '' },
+    zh: { title: zhT || enT, desc: zhD || enD || '' }
+  };
+  DB.saveHistoryCards(cards);
+  renderHistoryTable();
+  renderHistoryReact();
+  toast(_t('admin_history_toast_saved'));
 }
 
 // ======================== UI ========================
@@ -1243,22 +1649,18 @@ function renderBlog() {
   var sb = document.getElementById('blog-submit-btn');
   if (sb) sb.style.display = getCurrentUser() ? 'inline-block' : 'none';
 
-  // Stop previous animation
+  // Stop previous animation (legacy, now unused)
   if (blogRotationRAF) { cancelAnimationFrame(blogRotationRAF); blogRotationRAF = null; }
 
   if (!posts.length) {
     ring.innerHTML = '';
-    stage.innerHTML = '<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;width:100%;color:rgba(232,229,219,.3);font-size:14px;font-weight:300"><div style="font-size:32px;opacity:.3;margin-bottom:12px">&#9670;</div>' + _t('blog_empty') + '</div>';
+    stage.innerHTML = '<div style="position:relative;text-align:center;width:100%;padding:80px 0;color:rgba(232,229,219,.3);font-size:14px;font-weight:300"><div style="font-size:32px;opacity:.3;margin-bottom:12px">&#9670;</div>' + _t('blog_empty') + '</div>';
     return;
   }
 
-  var radius = 420;
-  var count = posts.length;
-  var angleStep = 360 / count;
-
-  // Build panels positioned on a cylinder surface
+  // Build static frosted glass cards (no 3D rotation)
   var panelsHTML = '';
-  for (var i = 0; i < count; i++) {
+  for (var i = 0; i < posts.length; i++) {
     var p = posts[i];
     var catClass = getCategoryClass(p.category);
     var catLabel = getCategoryLabel(p.category);
@@ -1266,9 +1668,8 @@ function renderBlog() {
     var bodyPreview = (p.body || '').substring(0, 200);
     var bodyEsc = escapeHtml(bodyPreview);
     var authorEsc = escapeHtml(p.author || '');
-    var postIdx = i;
 
-    panelsHTML += '<div class="frosted-panel" data-post-idx="'+postIdx+'" data-cat="'+p.category+'" style="transform:rotateY('+(angleStep*i)+'deg) translateZ('+radius+'px)">'+
+    panelsHTML += '<div class="frosted-panel" data-post-idx="'+i+'" data-cat="'+p.category+'">'+
       '<div class="panel-cat '+catClass+'">'+catLabel+'</div>'+
       '<div class="panel-title">'+titleEsc+'</div>'+
       '<div class="panel-meta">'+authorEsc+' &middot; '+p.submitted+'</div>'+
@@ -1277,84 +1678,20 @@ function renderBlog() {
   }
   ring.innerHTML = panelsHTML;
 
-  // Click handler to open detail
-  ring.addEventListener('click', function(e) {
-    var panel = e.target.closest('.frosted-panel');
-    if (!panel) return;
-    var idx = parseInt(panel.dataset.postIdx);
-    // Squash panel down, then open detail
-    panel.style.transition = 'transform .15s cubic-bezier(.4,0,1,1)';
-    panel.style.transform = 'rotateY(' + (angleStep * idx) + 'deg) translateZ(' + radius + 'px) scale(0.92)';
-    setTimeout(function() {
-      panel.style.transition = 'transform .25s cubic-bezier(.34,1.56,.64,1)';
-      panel.style.transform = 'rotateY(' + (angleStep * idx) + 'deg) translateZ(' + radius + 'px) scale(1.02)';
+  // Click handler to open detail (with subtle press feedback)
+  ring.querySelectorAll('.frosted-panel').forEach(function(panel) {
+    panel.addEventListener('click', function() {
+      var idx = parseInt(panel.dataset.postIdx);
+      panel.style.transform = 'scale(0.96)';
       setTimeout(function() {
-        panel.style.transition = 'transform .3s cubic-bezier(.34,1.56,.64,1)';
-        panel.style.transform = 'rotateY(' + (angleStep * idx) + 'deg) translateZ(' + radius + 'px) scale(1)';
-      }, 80);
-      openBlogDetail(posts[idx]);
-    }, 150);
-  }, {once: true});
-
-  // Start smooth CCW rotation
-  blogRotationAngle = 0;
-  blogAutoRotate = true;
-  animateBlogCarousel(count, angleStep, radius);
+        panel.style.transform = '';
+        openBlogDetail(posts[idx]);
+      }, 120);
+    });
+  });
 }
 
-function animateBlogCarousel(count, angleStep, radius) {
-  var ring = document.getElementById('carousel-ring');
-  if (!ring) return;
-
-  function frame() {
-    if (blogAutoRotate && count > 1) {
-      blogRotationAngle -= 0.8; // CCW rotation around Y axis
-    }
-
-    ring.style.transform = 'rotateY(' + (-blogRotationAngle) + 'deg)';
-
-    var panels = ring.querySelectorAll('.frosted-panel');
-    for (var i = 0; i < panels.length; i++) {
-      var panel = panels[i];
-      // Each panel's world angle = its base angle + current carousel rotation
-      var panelAngle = (angleStep * i) - blogRotationAngle;
-      // Normalize to [-180, 180]
-      while (panelAngle > 180) panelAngle -= 360;
-      while (panelAngle < -180) panelAngle += 360;
-
-      var absA = Math.abs(panelAngle);
-
-      if (absA < 70) {
-        // Front-facing: fully visible
-        panel.style.opacity = '1';
-        panel.style.filter = 'blur(0px)';
-        panel.style.pointerEvents = 'auto';
-        panel.style.zIndex = String(30 - Math.floor(absA / 10));
-        // Subtle scale on center
-        var scale = 1 + (1 - absA / 70) * 0.04;
-        panel.style.transform = 'rotateY(' + (angleStep * i) + 'deg) translateZ(' + radius + 'px) scale(' + scale + ')';
-      } else if (absA < 140) {
-        // Transition zone: fading and blurring
-        var fadeProgress = (absA - 70) / 70;
-        panel.style.opacity = String(Math.max(0, 1 - fadeProgress));
-        panel.style.filter = 'blur(' + (fadeProgress * 12) + 'px)';
-        panel.style.pointerEvents = 'none';
-        panel.style.zIndex = '1';
-        panel.style.transform = 'rotateY(' + (angleStep * i) + 'deg) translateZ(' + radius + 'px)';
-      } else {
-        // Back-facing: fully hidden, completely invisible
-        panel.style.opacity = '0';
-        panel.style.filter = 'blur(16px)';
-        panel.style.pointerEvents = 'none';
-        panel.style.zIndex = '0';
-        panel.style.transform = 'rotateY(' + (angleStep * i) + 'deg) translateZ(' + radius + 'px)';
-      }
-    }
-
-    blogRotationRAF = requestAnimationFrame(frame);
-  }
-  frame();
-}
+// animateBlogCarousel removed — cards are now static, no rotation
 
 function openBlogDetail(post) {
   var overlay = document.getElementById('blog-detail-overlay');
@@ -1566,9 +1903,9 @@ function dismissNotif(){
 // Patch into admin
 ;(function(){
   var _origRefreshUI=refreshUI;
-  refreshUI=function(){_origRefreshUI();setupBlogTabs();checkNotifs();renderBlog()};
+  refreshUI=function(){_origRefreshUI();setupBlogTabs();checkNotifs();renderBlog();renderGallery()};
   var _origApplyLang=applyLang;
-  applyLang=function(){_origApplyLang();setupBlogTabs();if(document.getElementById('admin-section').style.display==='block'){renderPendingTable();renderBlogPendingTable()}};
+  applyLang=function(){_origApplyLang();setupBlogTabs();if(document.getElementById('admin-section').style.display==='block'){renderPendingTable();renderBlogPendingTable();renderHistoryTable()}};
   var _origRenderPending=renderPendingTable;
   renderPendingTable=function(){_origRenderPending();var posts=getBlogPosts();var pending=posts.filter(function(p){return p.status==='pending'});var pc=document.getElementById('blog-pending-count');if(pc)pc.textContent=pending.length?'('+pending.length+')':'';renderBlogPendingTable()};
 })();
@@ -1592,12 +1929,9 @@ function dismissNotif(){
     document.querySelectorAll('.blog-bg-scene a').forEach(function(el){el.remove()})
   }
   function goUS(){
-    var o=new MutationObserver(function(){rmWm()});
-    o.observe(document.body,{childList:true,subtree:true});
     window.UnicornStudio.init().then(function(){
-      setTimeout(rmWm,500);setTimeout(rmWm,1500);setTimeout(rmWm,3000);
-      setTimeout(function(){o.disconnect()},5000)
-    }).catch(function(){o.disconnect()})
+      setTimeout(rmWm,500);setTimeout(rmWm,2000);
+    }).catch(function(){})
   }
   initUS()
 })();
@@ -1605,12 +1939,17 @@ function dismissNotif(){
 // ======================== SCROLL ========================
 (function(){
   var nav=document.getElementById('nav'),hero=document.getElementById('hero');
-  window.addEventListener('scroll',function(){
+  var ticking=false;
+  function onScroll(){
     if(!hero)return;var sc=window.scrollY,h=hero.offsetHeight;
     if(sc>h-100){nav.classList.add('scrolled');nav.style.mixBlendMode='normal'}
     else{nav.classList.remove('scrolled');nav.style.mixBlendMode='difference'}
     nav.style.opacity=sc<h-100?1:Math.max(0.85,1-(sc-h+100)/300)
-  },{passive:true})
+    ticking=false;
+  }
+  window.addEventListener('scroll',function(){
+    if(!ticking){ticking=true;requestAnimationFrame(onScroll)}
+  },{passive:true});
 })();
 
 // ======================== INIT ========================
@@ -1634,6 +1973,165 @@ applyLang();
 refreshUI();
 renderGallery();
 renderBlog();
+</script>
+<!-- React and CardSwap dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+const { useRef, useEffect, useMemo, useState, forwardRef, Children, cloneElement, isValidElement } = React;
+
+// ---------- CardSwap component (adapted) ----------
+const HistoryCard = forwardRef(({ customClass, ...rest }, ref) => (
+  <div ref={ref} {...rest} className={`history-card ${customClass ?? ''} ${rest.className ?? ''}`.trim()} />
+));
+HistoryCard.displayName = 'HistoryCard';
+
+const CardSwap = ({
+  width = 500,
+  height = 400,
+  cardDistance = 60,
+  verticalDistance = 70,
+  delay = 5000,
+  pauseOnHover = false,
+  onCardClick,
+  skewAmount = 6,
+  easing = 'elastic',
+  children
+}) => {
+  const config = easing === 'elastic' ? {
+    ease: 'power2.out', durDrop: 0.6, durMove: 0.6, durReturn: 0.6, promoteOverlap: 0.6, returnDelay: 0.1
+  } : {
+    ease: 'power1.inOut', durDrop: 0.8, durMove: 0.8, durReturn: 0.8, promoteOverlap: 0.45, returnDelay: 0.2
+  };
+  const childArr = useMemo(() => Children.toArray(children), [children]);
+  const refs = useMemo(() => childArr.map(() => React.createRef()), [childArr.length]);
+  const order = useRef(Array.from({ length: childArr.length }, (_, i) => i));
+  const tlRef = useRef(null);
+  const intervalRef = useRef();
+  const container = useRef(null);
+
+  const makeSlot = (i, distX, distY, total) => ({ x: i * distX, y: -i * distY, z: -i * distX * 1.5, zIndex: total - i });
+  const placeNow = (el, slot, skew) => gsap.set(el, { x: slot.x, y: slot.y, z: slot.z, xPercent: -50, yPercent: -50, skewY: skew, transformOrigin: 'center center', zIndex: slot.zIndex, force3D: true });
+
+  useEffect(() => {
+    const total = refs.length;
+    refs.forEach((r, i) => placeNow(r.current, makeSlot(i, cardDistance, verticalDistance, total), skewAmount));
+    const swap = () => {
+      if (order.current.length < 2) return;
+      const [front, ...rest] = order.current;
+      const elFront = refs[front].current;
+      const tl = gsap.timeline();
+      tlRef.current = tl;
+      tl.to(elFront, { y: '+=500', duration: config.durDrop, ease: config.ease });
+      tl.addLabel('promote', `-=${config.durDrop * config.promoteOverlap}`);
+      rest.forEach((idx, i) => {
+        const el = refs[idx].current;
+        const slot = makeSlot(i, cardDistance, verticalDistance, refs.length);
+        tl.set(el, { zIndex: slot.zIndex }, 'promote');
+        tl.to(el, { x: slot.x, y: slot.y, z: slot.z, duration: config.durMove, ease: config.ease }, `promote+=${i * 0.15}`);
+      });
+      const backSlot = makeSlot(refs.length - 1, cardDistance, verticalDistance, refs.length);
+      tl.addLabel('return', `promote+=${config.durMove * config.returnDelay}`);
+      tl.call(() => gsap.set(elFront, { zIndex: backSlot.zIndex }), undefined, 'return');
+      tl.to(elFront, { x: backSlot.x, y: backSlot.y, z: backSlot.z, duration: config.durReturn, ease: config.ease }, 'return');
+      tl.call(() => { order.current = [...rest, front]; });
+    };
+    swap();
+    intervalRef.current = window.setInterval(swap, delay);
+    if (pauseOnHover) {
+      const node = container.current;
+      const pause = () => { tlRef.current?.pause(); clearInterval(intervalRef.current); };
+      const resume = () => { tlRef.current?.play(); intervalRef.current = window.setInterval(swap, delay); };
+      node.addEventListener('mouseenter', pause);
+      node.addEventListener('mouseleave', resume);
+      return () => {
+        node.removeEventListener('mouseenter', pause);
+        node.removeEventListener('mouseleave', resume);
+        clearInterval(intervalRef.current);
+      };
+    }
+    return () => clearInterval(intervalRef.current);
+  }, [cardDistance, verticalDistance, delay, pauseOnHover, skewAmount, easing]);
+
+  const rendered = childArr.map((child, i) =>
+    isValidElement(child) ? cloneElement(child, { key: i, ref: refs[i], style: { width, height, ...(child.props.style ?? {}) }, onClick: e => { child.props.onClick?.(e); onCardClick?.(i); } }) : child
+  );
+  return <div ref={container} className="card-swap-container" style={{ width, height }}>{rendered}</div>;
+};
+
+// ---------- Our History React component ----------
+const OurHistory = ({ lang }) => {
+  const historyCards = (typeof getHistoryCards === 'function') ? getHistoryCards() : [];
+  const [selectedCard, setSelectedCard] = useState(-1);
+  const text = {
+    zh: { title: "我们的历程", subtitle: "从最初的小小想法到如今的成长社区，每一步都承载着我们的坚持与热爱。" },
+    en: { title: "Our History", subtitle: "From a small idea to a growing community, every step carries our persistence and passion." }
+  };
+    return (
+      <section className="relative w-full flex items-center px-6 md:px-12 py-8">
+        <div className="max-w-7xl mx-auto w-full relative min-h-[480px] md:h-[600px] grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
+          {/* Title */}
+          <div className="z-10 pt-4 md:pt-0">
+            <h2 className="font-black mb-5 leading-[0.95]" style={{color:'#fff',fontSize:'clamp(2.4rem,5.5vw,4rem)',textTransform:'uppercase',letterSpacing:'-0.02em'}}>
+              {lang === 'en' ? <>OUR<br/>HISTORY</> : <>我们的<br/>历程</>}
+            </h2>
+            <p className="text-base md:text-lg leading-relaxed max-w-md" style={{color:'rgba(255,255,255,0.75)'}}>{text[lang].subtitle}</p>
+          </div>
+          {/* CardSwap - desktop */}
+          <div className="hidden md:flex justify-center items-center h-full">
+            <CardSwap width={420} height={280} cardDistance={30} verticalDistance={55} delay={4000} pauseOnHover={true} easing="elastic" skewAmount={3} onCardClick={(idx) => setSelectedCard(idx)}>
+              {historyCards.map((card, idx) => (
+                <HistoryCard key={idx}>
+                  <h3>{card[lang].title}</h3>
+                  <p>{card[lang].desc}</p>
+                </HistoryCard>
+              ))}
+            </CardSwap>
+          </div>
+          {/* Mobile list */}
+          <div className="md:hidden mt-8 w-full space-y-4">
+            {historyCards.map((card, idx) => (
+              <div key={idx} className="history-card-static" onClick={() => setSelectedCard(idx)} style={{cursor:'pointer'}}>
+                <h3>{card[lang].title}</h3>
+                <p>{card[lang].desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Card detail modal */}
+        {selectedCard >= 0 && historyCards[selectedCard] && (
+          <div className="history-modal-overlay" onClick={() => setSelectedCard(-1)}>
+            <div className="history-modal" onClick={(e) => e.stopPropagation()}>
+              <button className="history-modal-close" onClick={() => setSelectedCard(-1)}>&times;</button>
+              <h3>{historyCards[selectedCard][lang].title}</h3>
+              <p>{historyCards[selectedCard][lang].desc}</p>
+              {historyCards[selectedCard].en && historyCards[selectedCard].zh && lang === 'en' && historyCards[selectedCard].zh.title && (
+                <div className="history-modal-alt"><span>中文：</span><strong>{historyCards[selectedCard].zh.title}</strong><p>{historyCards[selectedCard].zh.desc}</p></div>
+              )}
+              {historyCards[selectedCard].en && historyCards[selectedCard].zh && lang === 'zh' && historyCards[selectedCard].en.title && (
+                <div className="history-modal-alt"><span>EN:</span><strong>{historyCards[selectedCard].en.title}</strong><p>{historyCards[selectedCard].en.desc}</p></div>
+              )}
+            </div>
+          </div>
+        )}
+      </section>
+    );
+};
+
+// Render into the placeholder; re-callable for language switch / admin edits
+var _historyRoot = null;
+function renderHistoryReact(){
+  if(!_historyRoot && document.getElementById('history-root')){
+    _historyRoot = ReactDOM.createRoot(document.getElementById('history-root'));
+  }
+  if(_historyRoot){
+    _historyRoot.render(<OurHistory lang={currentLang} />);
+  }
+}
+renderHistoryReact();
 </script>
 </body>
 </html>
