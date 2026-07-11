@@ -143,6 +143,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .media-card .meta{position:absolute;bottom:0;left:0;right:0;padding:40px 16px 12px;background:linear-gradient(transparent,rgba(0,0,0,.7))}
 .media-card .meta .m-title{font-size:13px;font-weight:600;color:var(--white);margin-bottom:2px}
 .media-card .meta .m-author{font-size:11px;font-weight:300;color:rgba(255,255,255,.5)}
+.media-card .desc-btn{margin-top:6px;font-size:10px;letter-spacing:.08em;color:rgba(255,255,255,.45);background:none;border:none;font-family:var(--font);cursor:pointer;padding:2px 0;transition:color .3s}
+.media-card .desc-btn:hover{color:rgba(255,255,255,.85)}
+.media-card .desc-overlay{position:absolute;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .3s ease;z-index:3}
+.media-card .desc-overlay.show{opacity:1;pointer-events:auto}
+.media-card .desc-overlay .desc-content{position:relative;max-width:320px;text-align:center}
+.media-card .desc-overlay .desc-text{font-size:13px;font-weight:300;line-height:1.7;color:rgba(255,255,255,.82)}
+.media-card .desc-overlay .desc-close{position:absolute;top:-14px;right:-14px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:rgba(255,255,255,.7);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .3s}
+.media-card .desc-overlay .desc-close:hover{background:rgba(255,255,255,.3)}
 .media-card .status-badge{position:absolute;top:10px;right:10px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;z-index:2}
 .status-badge.approved{color:rgba(144,200,144,.8);background:rgba(0,0,0,.4)}
 .status-badge.pending{color:rgba(240,200,100,.8);background:rgba(0,0,0,.4)}
@@ -699,8 +707,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
   <h2 class="section-title"><span class="section-title-cut" data-i18n="gallery_title">Public Gallery</span></h2>
   <div class="gallery-wrap">
     <div class="gallery-tabs">
-      <button class="gallery-tab active" data-tab="videos" onclick="switchGallery('videos')">Videos</button>
-      <button class="gallery-tab" data-tab="designs" onclick="switchGallery('designs')">Designs</button>
+      <button class="gallery-tab active" data-tab="designs" onclick="switchGallery('designs')">Designs</button>
+      <button class="gallery-tab" data-tab="videos" onclick="switchGallery('videos')">Videos</button>
       <div class="gallery-actions">
         <span id="gallery-count" class="badge-count">0</span>
         <button class="submit-btn" id="gallery-submit-btn" onclick="openSubmitModal()" style="display:none"><span data-i18n="gallery_submit">+ Submit</span></button>
@@ -931,6 +939,7 @@ var LANG_DATA = {
     label_username: 'Username', label_password: 'Password', label_code: 'Club Code', label_display: 'Display Name', label_email: 'Email (optional)', label_title: 'Title', label_url: 'URL', label_type: 'Type', label_desc: 'Description (optional)', label_newpass: 'New Password (leave blank to keep)',
     placeholder_code: 'Invitation code', placeholder_user: 'Choose a unique username', placeholder_name: 'How others see you', placeholder_email: 'your@email.com', placeholder_pass: 'At least 4 characters', placeholder_title: 'Name your work', placeholder_url: 'YouTube / Bilibili link', placeholder_img: 'Image File',
     gallery_empty: 'No {tab} published yet.',
+    gallery_about: 'About',
     pending_empty: 'No pending submissions.',
     login_err_empty: 'Please fill in all fields.', login_err_invalid: 'Invalid username or password.',
     register_err_empty: 'Please fill in all fields.', register_err_code: 'Invalid club invitation code.', register_err_user: 'Username must be at least 3 characters.', register_err_pass: 'Password must be at least 4 characters.', register_err_taken: 'Username already taken.',
@@ -998,6 +1007,7 @@ var LANG_DATA = {
     label_username: '用户名', label_password: '密码', label_code: '社团邀请码', label_display: '显示名称', label_email: '邮箱（选填）', label_title: '标题', label_url: '链接', label_type: '类型', label_desc: '描述（选填）', label_newpass: '新密码（留空不变）',
     placeholder_code: '输入邀请码', placeholder_user: '设置用户名', placeholder_name: '别人看到的名字', placeholder_email: 'your@email.com', placeholder_pass: '至少4位字符', placeholder_title: '作品名称', placeholder_url: 'YouTube / Bilibili 链接', placeholder_img: '选择图片文件',
     gallery_empty: '暂无{tab}。',
+    gallery_about: '简介',
     pending_empty: '暂无待审核投稿。',
     login_err_empty: '请填写所有字段。', login_err_invalid: '用户名或密码错误。',
     register_err_empty: '请填写所有字段。', register_err_code: '社团邀请码错误。', register_err_user: '用户名至少3个字符。', register_err_pass: '密码至少4位字符。', register_err_taken: '用户名已被占用。',
@@ -1282,7 +1292,7 @@ function handleSubmit(){
 }
 
 // ======================== GALLERY ========================
-var currentGalleryTab='videos';
+var currentGalleryTab='designs';
 
 function switchGallery(tab){
   currentGalleryTab=tab;
@@ -1319,11 +1329,18 @@ function renderGallery(){
     var auth=m.author||'Media Club';
     var sd=isAdmin()?'<button class="del-btn" onclick="event.stopPropagation();deleteMediaItem('+i+')" title="Delete">&times;</button>':'';
     var sh=m.status&&m.status!=='approved'?'<div class="status-badge '+m.status+'">'+m.status+'</div>':'';
+    var hasDesc=m.description&&m.description.trim();
+    var descBtn=hasDesc?'<button class="desc-btn" onclick="event.stopPropagation();toggleDesc('+i+')">'+_t('gallery_about')+'</button>':'';
+    var descOverlay=hasDesc?'<div class="desc-overlay" id="desc-'+i+'"><div class="desc-content"><div class="desc-text">'+m.description+'</div><button class="desc-close" onclick="event.stopPropagation();toggleDesc('+i+')">&times;</button></div></div>':'';
     return '<div class="media-card" onclick="'+(isVid?'openVideo(\''+eu+'\')':'openImage(\''+m.url+'\')')+'">'+
       (isVid?'<div style="width:100%;height:100%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;font-size:28px;color:rgba(255,255,255,.08)">&#9654;</div><div class="play-btn"><span>&#9654;</span></div>':'<img src="'+m.url+'" alt="'+m.title+'" loading="lazy">')+
-      sd+sh+
-      '<div class="meta"><div class="m-title">'+m.title+'</div><div class="m-author">'+auth+'</div></div></div>'
+      sd+sh+descOverlay+
+      '<div class="meta"><div class="m-title">'+m.title+'</div><div class="m-author">'+auth+'</div>'+descBtn+'</div></div>'
   }).join('');
+}
+function toggleDesc(idx){
+  var el=document.getElementById('desc-'+idx);
+  if(el)el.classList.toggle('show');
 }
 
 function openVideo(url){
