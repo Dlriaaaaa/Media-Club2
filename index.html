@@ -1171,12 +1171,40 @@ function fbInit(cb){
 
 function fbDocKV(k){ return fb.db.collection('kv').doc(k); }
 
+// ---- kv merge helpers: a device must MERGE with the cloud, never overwrite it ----
+function _kvParseArr(raw){
+  if(Array.isArray(raw)) return raw;
+  if(typeof raw === 'string'){ try{ var a=JSON.parse(raw); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+  return [];
+}
+function _kvKey(k, item){
+  // Natural key per collection so items merge stably across devices (seeds match everywhere).
+  if(k==='mc_users' && item && item.username) return 'u:'+item.username;
+  if(k==='mc_blog' && item) return 'b:'+(item.category||'')+'|'+(item.title||'');
+  if(k==='mc_history_cards' && item) return 'h:'+((item.en&&item.en.title)||'')+'|'+((item.zh&&item.zh.title)||'');
+  if(k==='mc_notifs' && item) return 'n:'+(item.username||'')+'|'+(item.date||'')+'|'+((item.message||'').slice(0,30));
+  return 'x:'+JSON.stringify(item);
+}
+function _kvMerge(k, a, b){
+  // Union by natural key; items from `b` take precedence on conflict.
+  var map = {}, out = [];
+  a.forEach(function(it){ map[_kvKey(k,it)] = it; });
+  b.forEach(function(it){ map[_kvKey(k,it)] = it; });
+  Object.keys(map).forEach(function(key){ out.push(map[key]); });
+  return out;
+}
+
 function fbPullKV(cb){
   var pending = SYNC_KEYS.length;
   var done = function(){ pending--; if(pending <= 0 && cb) cb(); };
   SYNC_KEYS.forEach(function(k){
     fbDocKV(k).get().then(function(snap){
-      if(snap.exists && snap.data().v !== undefined){ try{ localStorage.setItem(k, snap.data().v); }catch(e){} }
+      if(snap.exists && snap.data().v !== undefined){
+        var cloudArr = _kvParseArr(snap.data().v);
+        var localArr = _kvParseArr(localStorage.getItem(k));
+        var merged = _kvMerge(k, localArr, cloudArr); // cloud wins on pull
+        try{ localStorage.setItem(k, JSON.stringify(merged)); }catch(e){}
+      }
     }).catch(function(){}).finally(done);
   });
 }
@@ -1184,9 +1212,16 @@ function fbPullKV(cb){
 function fbPushKV(){
   SYNC_KEYS.forEach(function(k){
     var v = localStorage.getItem(k);
-    if(v !== null){
-      fbDocKV(k).set({v:v}, {merge:true}).catch(function(e){ console.error(e); cloudSync.online=false; cloudSync.updateIndicator(); });
-    }
+    if(v === null) return;
+    var localArr = _kvParseArr(v);
+    fbDocKV(k).get().then(function(snap){
+      var cloudArr = snap.exists ? _kvParseArr(snap.data().v) : [];
+      var merged = _kvMerge(k, cloudArr, localArr); // local wins on push (propagate local edits)
+      fbDocKV(k).set({v: JSON.stringify(merged)}, {merge:true}).catch(function(e){ console.error(e); cloudSync.online=false; cloudSync.updateIndicator(); });
+    }).catch(function(){
+      // Can't read cloud (rare) — best-effort write local state.
+      fbDocKV(k).set({v: JSON.stringify(localArr)}, {merge:true}).catch(function(e){ console.error(e); cloudSync.online=false; cloudSync.updateIndicator(); });
+    });
   });
 }
 
@@ -1233,7 +1268,12 @@ function fbListen(){
   }, function(err){ console.warn('media snapshot error', err); });
   SYNC_KEYS.forEach(function(k){
     fbDocKV(k).onSnapshot(function(snap){
-      if(snap.exists && snap.data().v !== undefined){ try{ localStorage.setItem(k, snap.data().v); }catch(e){} }
+      if(snap.exists && snap.data().v !== undefined){
+        var cloudArr = _kvParseArr(snap.data().v);
+        var localArr = _kvParseArr(localStorage.getItem(k));
+        var merged = _kvMerge(k, localArr, cloudArr); // cloud wins on pull
+        try{ localStorage.setItem(k, JSON.stringify(merged)); }catch(e){}
+      }
       refreshUI();
       if(typeof renderHistoryReact==='function') renderHistoryReact();
     }, function(err){ console.warn('kv snapshot error', err); });
