@@ -9,6 +9,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={corePlugins:{preflight:false}};</script>
+<!-- Firebase (Firestore + Anonymous Auth) for cross-device cloud sync -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <style>
 :root{--bg:#B5C0A0;--bg-alt:#AAB89A;--bg-dark:#2D3329;--text:#3A4038;--text-light:#6B7268;--text-muted:#8B9080;--black:#000000;--white:#F5F2E8;--accent:#E8E5DB;--border:#8B9080;--font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -1107,62 +1111,128 @@ function renderSchedule() {
   container.innerHTML = items.join('');
 }
 
-// ======================== CLOUD SYNC ========================
-var SYNC_KEYS = ['mc_users','mc_media','mc_blog','mc_history_cards','mc_notifs'];
-var SERVER_URL = (location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? (location.port && location.protocol !== 'file:' ? '' : 'http://localhost:3000') : '';
-var CLOUD_API = SERVER_URL + '/api/data';
+// ======================== CLOUD SYNC (Firebase Firestore) ========================
+// Cross-device sync via Firebase. Small data lives in the `kv` collection (one doc per key);
+// media items live in the `media` collection (one doc per item) to avoid the 1MB single-doc limit.
+var FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBZGbD_WG2oN0FzoEfLgHcms8HulUxXo9o",
+  authDomain: "media-club-c9ca4.firebaseapp.com",
+  projectId: "media-club-c9ca4",
+  storageBucket: "media-club-c9ca4.firebasestorage.app",
+  messagingSenderId: "1014474433933",
+  appId: "1:1014474433933:web:67529c9750ddcf000a09c4"
+};
+var SYNC_KEYS = ['mc_users','mc_blog','mc_history_cards','mc_notifs']; // small data; mc_media handled as a collection
+var fb = { app:null, db:null, auth:null, ready:false, initStarted:false, listenStarted:false };
 var cloudSync = {
   online: false,
   pushTimer: null,
-  _pulling: false,
-  _pullPromise: null,
   pull: function(cb){
-    var self = this;
-    self._pulling = true;
-    self._pullPromise = fetch(CLOUD_API).then(function(r){return r.json()}).then(function(data){
-      if(data && typeof data === 'object'){
-        // Server is source of truth: replace local with server data when key exists.
-        // When server lacks a key (fresh DB), keep local data so it gets migrated on push.
-        SYNC_KEYS.forEach(function(k){
-          if(data[k] !== undefined){
-            try{ localStorage.setItem(k, JSON.stringify(data[k])); }catch(e){}
-          }
-        });
-        self.online = true;
-      }
-      self._pulling = false;
-      self.push();
-      self.updateIndicator();
+    fbInit(function(){
+      fbPullAll();
+      cloudSync.online = true;
+      cloudSync.updateIndicator();
       if(cb) cb(true);
-    }).catch(function(){
-      self._pulling = false;
-      self.online = false;
-      self.updateIndicator();
-      if(cb) cb(false);
     });
-    return self._pullPromise;
   },
   push: function(){
     var self = this;
     if(this.pushTimer) clearTimeout(this.pushTimer);
-    this.pushTimer = setTimeout(function(){
-      var doPush = function(){
-        var payload = {};
-        SYNC_KEYS.forEach(function(k){ var v = localStorage.getItem(k); if(v) payload[k] = JSON.parse(v); });
-        fetch(CLOUD_API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)})
-          .then(function(){ self.online = true; self.updateIndicator(); })
-          .catch(function(){ self.online = false; self.updateIndicator(); });
-      };
-      // Wait for any in-flight pull so we don't overwrite server with stale local data
-      if(self._pulling && self._pullPromise){ self._pullPromise.then(doPush); }
-      else { doPush(); }
-    }, 800);
+    this.pushTimer = setTimeout(function(){ fbPushAll(); }, 600);
   },
   updateIndicator: function(){
     var el = document.getElementById('sync-indicator');
     if(el){ el.className = 'sync-indicator ' + (this.online ? 'online' : 'offline'); }
   }
 };
+
+function fbInit(cb){
+  if(fb.ready){ if(cb) cb(); return; }
+  if(fb.initStarted){ var t=setInterval(function(){ if(fb.ready){ clearInterval(t); if(cb) cb(); } }, 200); return; }
+  fb.initStarted = true;
+  try{
+    if(typeof firebase === 'undefined'){ console.warn('Firebase SDK not loaded'); if(cb) cb(); return; }
+    fb.app = firebase.initializeApp(FIREBASE_CONFIG);
+    fb.db = firebase.firestore();
+    fb.auth = firebase.auth();
+    fb.auth.signInAnonymously().then(function(){
+      fb.ready = true; cloudSync.online = true; cloudSync.updateIndicator();
+      fbListen();          // start realtime listener first
+      fbPullAll();         // pull any remote data
+      fbPushAll();         // push local data (e.g. seeded admin) to cloud
+      if(cb) cb();
+    }).catch(function(err){
+      console.error('Firebase anonymous sign-in failed:', err);
+      cloudSync.online = false; cloudSync.updateIndicator();
+      if(cb) cb();
+    });
+  }catch(e){ console.error('fbInit error', e); if(cb) cb(); }
+}
+
+function fbDocKV(k){ return fb.db.collection('kv').doc(k); }
+
+function fbPullKV(cb){
+  var pending = SYNC_KEYS.length;
+  var done = function(){ pending--; if(pending <= 0 && cb) cb(); };
+  SYNC_KEYS.forEach(function(k){
+    fbDocKV(k).get().then(function(snap){
+      if(snap.exists && snap.data().v !== undefined){ try{ localStorage.setItem(k, snap.data().v); }catch(e){} }
+    }).catch(function(){}).finally(done);
+  });
+}
+
+function fbPushKV(){
+  SYNC_KEYS.forEach(function(k){
+    var v = localStorage.getItem(k);
+    if(v !== null){
+      fbDocKV(k).set({v:v}, {merge:true}).catch(function(e){ console.error(e); cloudSync.online=false; cloudSync.updateIndicator(); });
+    }
+  });
+}
+
+function fbPullMedia(cb){
+  fb.db.collection('media').get().then(function(q){
+    var arr = [];
+    q.forEach(function(d){ var o = d.data(); o._id = d.id; arr.push(o); });
+    arr.sort(function(a,b){ return (a.order||0) - (b.order||0); });
+    try{ localStorage.setItem('mc_media', JSON.stringify(arr)); }catch(e){}
+    if(cb) cb();
+  }).catch(function(e){ console.error(e); if(cb) cb(); });
+}
+
+function fbPushMedia(){
+  var arr; try{ arr = JSON.parse(localStorage.getItem('mc_media')||'[]'); }catch(e){ arr = []; }
+  var ids = {};
+  arr.forEach(function(m){
+    var id = m._id || (m._id = 'm_' + Date.now() + '_' + Math.random().toString(36).slice(2,8));
+    ids[id] = true;
+    var copy = JSON.parse(JSON.stringify(m)); delete copy._id;
+    fb.db.collection('media').doc(id).set(copy).catch(function(e){ console.error(e); cloudSync.online=false; cloudSync.updateIndicator(); });
+  });
+  // delete docs that are no longer in the local array
+  fb.db.collection('media').get().then(function(q){
+    q.forEach(function(d){ if(!ids[d.id]) fb.db.collection('media').doc(d.id).delete().catch(function(){}); });
+  }).catch(function(){});
+}
+
+function fbPushAll(){ if(!fb.ready) return; fbPushKV(); fbPushMedia(); }
+function fbPullAll(){ if(!fb.ready) return; fbPullKV(); fbPullMedia(); }
+
+function fbListen(){
+  if(fb.listenStarted) return; fb.listenStarted = true;
+  fb.db.collection('media').onSnapshot(function(){
+    fbPullMedia();
+    refreshUI(); renderGallery(); renderBlog();
+    if(typeof renderHistoryReact==='function') renderHistoryReact();
+  }, function(err){ console.warn('media snapshot error', err); });
+  SYNC_KEYS.forEach(function(k){
+    fbDocKV(k).onSnapshot(function(snap){
+      if(snap.exists && snap.data().v !== undefined){ try{ localStorage.setItem(k, snap.data().v); }catch(e){} }
+      refreshUI();
+      if(typeof renderHistoryReact==='function') renderHistoryReact();
+    }, function(err){ console.warn('kv snapshot error', err); });
+  });
+}
 
 // ======================== DATA LAYER ========================
 var DB = {
