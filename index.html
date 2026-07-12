@@ -1201,18 +1201,24 @@ function fbPullMedia(cb){
 }
 
 function fbPushMedia(){
+  // Additive upsert: write each local item to the cloud by its stable _id.
+  // We NEVER delete cloud docs based on the local array — that would wipe
+  // works uploaded from other devices. Deletions propagate via tombstones (_deleted).
   var arr; try{ arr = JSON.parse(localStorage.getItem('mc_media')||'[]'); }catch(e){ arr = []; }
-  var ids = {};
+  var cleaned = [];
   arr.forEach(function(m){
     var id = m._id || (m._id = 'm_' + Date.now() + '_' + Math.random().toString(36).slice(2,8));
-    ids[id] = true;
+    if(m._deleted){
+      // propagate deletion: remove the cloud doc, drop the tombstone locally
+      fb.db.collection('media').doc(id).delete().catch(function(){});
+      return;
+    }
     var copy = JSON.parse(JSON.stringify(m)); delete copy._id;
     fb.db.collection('media').doc(id).set(copy).catch(function(e){ console.error(e); cloudSync.online=false; cloudSync.updateIndicator(); });
+    cleaned.push(m);
   });
-  // delete docs that are no longer in the local array
-  fb.db.collection('media').get().then(function(q){
-    q.forEach(function(d){ if(!ids[d.id]) fb.db.collection('media').doc(d.id).delete().catch(function(){}); });
-  }).catch(function(){});
+  // Persist assigned ids (and drop tombstones) back to the local cache.
+  try{ localStorage.setItem('mc_media', JSON.stringify(cleaned)); }catch(e){}
 }
 
 function fbPushAll(){ if(!fb.ready) return; fbPushKV(); fbPushMedia(); }
@@ -1443,7 +1449,7 @@ function renderGallery(){
   var grid=document.getElementById('media-grid');
   if(!grid)return;
   var all=DB.getMedia();
-  var items=all.filter(function(m){return m.type===currentGalleryTab&&m.status!=='rejected'&&(m.status==='approved'||!m.status)});
+  var items=all.filter(function(m){return !m._deleted&&m.type===currentGalleryTab&&m.status!=='rejected'&&(m.status==='approved'||!m.status)});
   var cnt=document.getElementById('gallery-count');
   if(cnt)cnt.textContent=items.length;
   var sb=document.getElementById('gallery-submit-btn');
@@ -1488,7 +1494,7 @@ function deleteMediaItem(idx){
   var media=DB.getMedia();
   var items=media.filter(function(m){return m.type===currentGalleryTab&&m.status!=='rejected'&&(m.status==='approved'||!m.status)});
   var item=items[idx];var ri=media.findIndex(function(m){return m===item});
-  if(ri>-1){media.splice(ri,1);if(!DB.saveMedia(media)){toast(_t('toast_save_failed'));return}renderGallery();toast(_t('toast_deleted'))}
+  if(ri>-1){item._deleted=true;if(!DB.saveMedia(media)){toast(_t('toast_save_failed'));return}renderGallery();toast(_t('toast_deleted'))}
 }
 
 // ======================== ADMIN ========================
@@ -1506,7 +1512,7 @@ function switchAdminTab(tab){
 function renderPendingTable(){
   var tbody=document.getElementById('pending-table-body');
   var media=DB.getMedia();
-  var pending=media.filter(function(m){return m.status==='pending'});
+  var pending=media.filter(function(m){return !m._deleted&&m.status==='pending'});
   var pc=document.getElementById('pending-count');
   if(pc)pc.textContent=pending.length?'('+pending.length+')':'';
   if(!pending.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:40px;color:rgba(232,229,219,.3)">'+_t('pending_empty')+'</td></tr>';return}
@@ -1520,7 +1526,7 @@ function renderPendingTable(){
 
 function approveItem(idx){
   var media=DB.getMedia();
-  var pending=media.filter(function(m){return m.status==='pending'});
+  var pending=media.filter(function(m){return !m._deleted&&m.status==='pending'});
   if(pending[idx]){pending[idx].status='approved';if(!DB.saveMedia(media)){toast(_t('toast_save_failed'));return}}
   renderPendingTable();renderGallery();toast(_t('toast_approved'))
 }
@@ -1528,7 +1534,7 @@ function approveItem(idx){
 function rejectItem(idx){
   if(!confirm(_t('confirm_reject')))return;
   var media=DB.getMedia();
-  var pending=media.filter(function(m){return m.status==='pending'});
+  var pending=media.filter(function(m){return !m._deleted&&m.status==='pending'});
   if(pending[idx]){pending[idx].status='rejected';if(!DB.saveMedia(media)){toast(_t('toast_save_failed'));return}}
   renderPendingTable();toast(_t('toast_rejected'))
 }
